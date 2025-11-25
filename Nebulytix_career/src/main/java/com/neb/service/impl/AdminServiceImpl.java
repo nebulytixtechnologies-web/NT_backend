@@ -259,5 +259,45 @@ public class AdminServiceImpl implements AdminService{
 	    byte[] dailyReportPDF = pdfGenerator.generateReportPDF(works, date);
 	    return dailyReportPDF;
 	}
+
+
+	// add  admin 
+	@Override
+	public AddEmployeeResponseDto addAdmin(AddEmployeeRequestDto addEmpReq) 
+	{
+		 // check if employee with same email already exists
+        if (empRepo.existsByEmail(addEmpReq.getEmail())) {
+        	throw new CustomeException("Admin with email :" + addEmpReq.getEmail() + " already exists");
+        }
+
+        // map DTO to entity
+        Employee emp = mapper.map(addEmpReq, Employee.class);
+        emp.setLoginRole("admin");
+
+        // save entity
+        Employee savedEmp = empRepo.save(emp);
+
+        // map saved entity to response DTO
+        AddEmployeeResponseDto addEmpRes = mapper.map(savedEmp, AddEmployeeResponseDto.class);
+
+        return addEmpRes;
+		
+	}
+
+     // delete the admin based on ID
+	@Override
+	public String deleteAdmin(Long id)
+	{
+
+		Optional<Employee> emp = empRepo.findById(id);	
+		if(emp.isPresent()) {
+			empRepo.deleteById(id);
+			return "Admin deleted with id:"+id;
+		}
+		else {
+			throw new CustomeException("Admin not found with id :"+id);
+		}
+	}
+	
 	
 	}
