@@ -14,6 +14,10 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +35,7 @@ import com.neb.dto.WorkResponseDto;
 import com.neb.entity.Employee;
 import com.neb.entity.Work;
 import com.neb.exception.CustomeException;
+import com.neb.exception.HrNotFoundException;
 import com.neb.repo.EmployeeRepository;
 import com.neb.repo.WorkRepository;
 import com.neb.service.AdminService;
@@ -214,40 +219,52 @@ public class AdminServiceImpl implements AdminService{
 		}
 	}
 
-//	@Override
-//	public UpdateEmployeeResponseDto updateHrDetails(Long empId, UpdateEmployeeRequestDto updateReq) {
-//		
-//		Employee hr = empRepo.findById(empId).orElseThrow(()->new CustomeException("hr not found with id :"+empId));
-//		hr.setFirstName(updateReq.getFirstName());
-//		hr.setLastName(updateReq.getLastName());
-//		hr.setEmail(updateReq.getEmail());
-//		hr.setMobile(updateReq.getMobile());
-//		hr.setCardNumber(updateReq.getCardNumber());
-//		hr.setLoginRole(updateReq.getLoginRole());
-//		hr.setJobRole(updateReq.getJobRole());
-//		hr.setDomain(updateReq.getDomain());
-//		hr.setGender(updateReq.getGender());
-//		hr.setJoiningDate(updateReq.getJoiningDate());
-//		hr.setSalary(updateReq.getSalary());
-//		hr.setDaysPresent(updateReq.getDaysPresent());
-//		hr.setPaidLeaves(updateReq.getPaidLeaves());
-//		hr.setBankAccountNumber(updateReq.getBankAccountNumber());
-//		hr.setBankName(updateReq.getBankName());
-//		hr.setPfNumber(updateReq.getPfNumber());
-//		hr.setPanNumber(updateReq.getPanNumber());
-//		hr.setUanNumber(updateReq.getUanNumber());
-//		hr.setEpsNumber(updateReq.getEpsNumber());
-//		hr.setEsiNumber(updateReq.getEsiNumber());
-//		
-//		Employee emp = empRepo.save(hr);
-//		UpdateEmployeeResponseDto updateHrRes = mapper.map(emp, UpdateEmployeeResponseDto.class);
-//		return updateHrRes;
-//	}
 	@Override
 	public EmployeeDetailsResponseDto getEmployee(Long id) {
 
 		Employee emp = empRepo.findById(id).orElseThrow(()->new CustomeException("Employee not found wuith id :"+id));
 		return mapper.map(emp, EmployeeDetailsResponseDto.class);	
+	}
+	@Override
+	public Page<EmployeeDetailsResponseDto> getHrList(int page, int size, String sort) {
+
+	    Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+
+	    Page<Employee> hrPage = empRepo.findAllHrs(pageable);
+
+	    if (hrPage.isEmpty()) {
+	        throw new HrNotFoundException("No HR records found");
+	    }
+
+	    return hrPage.map(e -> {
+	        EmployeeDetailsResponseDto dto = new EmployeeDetailsResponseDto();
+
+	        dto.setId(e.getId());
+	        dto.setFirstName(e.getFirstName());
+	        dto.setLastName(e.getLastName());
+	        dto.setEmail(e.getEmail());
+	        dto.setMobile(e.getMobile());
+	        dto.setCardNumber(e.getCardNumber());
+	        dto.setJobRole(e.getJobRole());
+	        dto.setDomain(e.getDomain());
+	        dto.setGender(e.getGender());
+	        dto.setJoiningDate(e.getJoiningDate());
+	        dto.setSalary(e.getSalary());
+	        dto.setDaysPresent(e.getDaysPresent());
+	        dto.setPaidLeaves(e.getPaidLeaves());
+	        dto.setLoginRole(e.getLoginRole());
+
+	        dto.setBankAccountNumber(e.getBankAccountNumber());
+	        dto.setIfscCode(e.getIfscCode());
+	        dto.setBankName(e.getBankName());
+	        dto.setPfNumber(e.getPfNumber());
+	        dto.setPanNumber(e.getPanNumber());
+	        dto.setUanNumber(e.getUanNumber());
+	        dto.setEpsNumber(e.getEpsNumber());
+	        dto.setEsiNumber(e.getEsiNumber());
+
+	        return dto;
+	    });
 	}
 	@Override
 	public byte[] generateDailyReport(LocalDate date) throws Exception {
@@ -259,5 +276,78 @@ public class AdminServiceImpl implements AdminService{
 	    byte[] dailyReportPDF = pdfGenerator.generateReportPDF(works, date);
 	    return dailyReportPDF;
 	}
-	
+	@Override
+	public EmployeeDetailsResponseDto updateHrDetails(Long id, UpdateEmployeeRequestDto updateReq) {
+
+	    Employee hr = empRepo.findById(id)
+	            .orElseThrow(() -> new CustomeException("HR not found with id: " + id));
+
+	    // Ensure this record belongs to HR
+	    if (!hr.getLoginRole().equalsIgnoreCase("hr")) {
+	        throw new CustomeException("This employee is not HR");
+	    }
+
+	    // -------- BASIC DETAILS --------
+	    if (updateReq.getFirstName() != null && !updateReq.getFirstName().isEmpty())
+	        hr.setFirstName(updateReq.getFirstName());
+
+	    if (updateReq.getLastName() != null && !updateReq.getLastName().isEmpty())
+	        hr.setLastName(updateReq.getLastName());
+
+	    if (updateReq.getEmail() != null && !updateReq.getEmail().isEmpty())
+	        hr.setEmail(updateReq.getEmail());
+
+	    if (updateReq.getMobile() != null && !updateReq.getMobile().isEmpty())
+	        hr.setMobile(updateReq.getMobile());
+
+	    if (updateReq.getCardNumber() != null && !updateReq.getCardNumber().isEmpty())
+	        hr.setCardNumber(updateReq.getCardNumber());
+
+	    if (updateReq.getJobRole() != null && !updateReq.getJobRole().isEmpty())
+	        hr.setJobRole(updateReq.getJobRole());
+
+	    if (updateReq.getDomain() != null && !updateReq.getDomain().isEmpty())
+	        hr.setDomain(updateReq.getDomain());
+
+	    if (updateReq.getGender() != null && !updateReq.getGender().isEmpty())
+	        hr.setGender(updateReq.getGender());
+
+	    // -------- SALARY + LEAVES --------
+	    if (updateReq.getSalary() != null)
+	        hr.setSalary(updateReq.getSalary());
+
+	    if (updateReq.getPaidLeaves() != 0)
+	        hr.setPaidLeaves(updateReq.getPaidLeaves());
+
+	    // -------- BANK & TAX DETAILS --------
+	    if (updateReq.getBankAccountNumber() != null && !updateReq.getBankAccountNumber().isEmpty())
+	        hr.setBankAccountNumber(updateReq.getBankAccountNumber());
+
+	    if (updateReq.getIfscCode() != null && !updateReq.getIfscCode().isEmpty())
+	        hr.setIfscCode(updateReq.getIfscCode());
+
+	    if (updateReq.getBankName() != null && !updateReq.getBankName().isEmpty())
+	        hr.setBankName(updateReq.getBankName());
+
+	    if (updateReq.getPfNumber() != null && !updateReq.getPfNumber().isEmpty())
+	        hr.setPfNumber(updateReq.getPfNumber());
+
+	    if (updateReq.getPanNumber() != null && !updateReq.getPanNumber().isEmpty())
+	        hr.setPanNumber(updateReq.getPanNumber());
+
+	    if (updateReq.getUanNumber() != null && !updateReq.getUanNumber().isEmpty())
+	        hr.setUanNumber(updateReq.getUanNumber());
+
+	    if (updateReq.getEpsNumber() != null && !updateReq.getEpsNumber().isEmpty())
+	        hr.setEpsNumber(updateReq.getEpsNumber());
+
+	    if (updateReq.getEsiNumber() != null && !updateReq.getEsiNumber().isEmpty())
+	        hr.setEsiNumber(updateReq.getEsiNumber());
+
+	    // -------- SAVE --------
+	    Employee updatedHr = empRepo.save(hr);
+
+	    return mapper.map(updatedHr, EmployeeDetailsResponseDto.class);
+	}
+
 	}

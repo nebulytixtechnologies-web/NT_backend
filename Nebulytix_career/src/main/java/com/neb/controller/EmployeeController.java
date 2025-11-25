@@ -106,4 +106,17 @@ public class EmployeeController {
     	
     	return ResponseEntity.ok(new ResponseMessage<String>(HttpStatus.OK.value(), HttpStatus.OK.name(), "daily report result", submitDailyReportResponse));
    }
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseMessage<String>> logout() {
+
+        return ResponseEntity.ok(
+                new ResponseMessage<>(
+                        HttpStatus.OK.value(),
+                        HttpStatus.OK.name(),
+                        "Logout successful",
+                        "Admin logged out successfully"
+                )
+        );
+    }
+
 }

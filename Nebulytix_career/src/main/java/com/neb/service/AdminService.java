@@ -4,6 +4,7 @@ package com.neb.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.neb.dto.*;
@@ -37,4 +38,7 @@ public interface AdminService {
    // public UpdateEmployeeResponseDto updateHrDetails(Long empId,UpdateEmployeeRequestDto updateReq);
     
     public byte[] generateDailyReport(LocalDate date)throws Exception;
+    public Page<EmployeeDetailsResponseDto> getHrList(int page, int size, String sort);
+    EmployeeDetailsResponseDto updateHrDetails(Long id, UpdateEmployeeRequestDto dto);
+
 }

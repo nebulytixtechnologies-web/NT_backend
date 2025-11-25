@@ -30,4 +30,15 @@ public class GlobalExceptionHandler {
 	        );
 	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
+	 @ExceptionHandler(HrNotFoundException.class)
+	 public ResponseEntity<ErrorResponse> handleHrNotFound(HrNotFoundException ex, WebRequest request) {
+	     ErrorResponse response = new ErrorResponse(
+	             HttpStatus.NOT_FOUND.value(),
+	             HttpStatus.NOT_FOUND.getReasonPhrase(),
+	             ex.getMessage(),
+	             request.getDescription(false)
+	     );
+
+	     return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	 }
 }
