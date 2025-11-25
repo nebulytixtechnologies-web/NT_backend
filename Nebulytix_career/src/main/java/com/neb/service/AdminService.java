@@ -37,4 +37,8 @@ public interface AdminService {
    // public UpdateEmployeeResponseDto updateHrDetails(Long empId,UpdateEmployeeRequestDto updateReq);
     
     public byte[] generateDailyReport(LocalDate date)throws Exception;
+
+	public AddEmployeeResponseDto addAdmin(AddEmployeeRequestDto addEmpReq);
+
+	public String deleteAdmin(Long id);
 }
