@@ -240,4 +240,16 @@ public class HrController {
                 new ResponseMessage<>(200, "OK", "Job deleted successfully", result)
         );
     }
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseMessage<String>> logout() {
+
+        return ResponseEntity.ok(
+                new ResponseMessage<>(
+                        HttpStatus.OK.value(),
+                        HttpStatus.OK.name(),
+                        "Logout successful",
+                        "Admin logged out successfully"
+                )
+        );
+    }
 }

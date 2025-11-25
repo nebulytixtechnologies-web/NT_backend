@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -204,4 +206,54 @@ public class AdminController {
 	        System.out.println("pdf generated");
 	        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
 	    }
+	    @GetMapping("/hr-list")
+	    public ResponseEntity<Page<EmployeeDetailsResponseDto>> getAllHrs(
+	            @RequestParam(defaultValue = "0") int page,
+	            @RequestParam(defaultValue = "10") int size,
+	            @RequestParam(defaultValue = "id") String sort) {
+
+	        Page<EmployeeDetailsResponseDto> hrPage = adminService.getHrList(page, size, sort);
+
+	        return ResponseEntity.ok(hrPage);
+	    }
+	    @PostMapping("/logout")
+	    public ResponseEntity<ResponseMessage<String>> logout() {
+
+	        return ResponseEntity.ok(
+	                new ResponseMessage<>(
+	                        HttpStatus.OK.value(),
+	                        HttpStatus.OK.name(),
+	                        "Logout successful",
+	                        "Admin logged out successfully"
+	                )
+	        );
+	    }
+//	    @GetMapping("/hr/{id}")
+//	    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> getHrById(@PathVariable Long id) {
+//	        EmployeeDetailsResponseDto hr = adminService.getHrById(id);
+//	        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "HR details fetched", hr));
+//	    }
+
+	 // file: com/neb/controller/AdminController.java
+	 // Replace your previous update-hr endpoint with:
+
+	 @PutMapping("/update/hr/{id}")
+	 public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> updateHrDetails(
+	         @PathVariable Long id,
+	         @RequestBody UpdateEmployeeRequestDto updateReq) {
+
+	     EmployeeDetailsResponseDto updatedHr = adminService.updateHrDetails(id, updateReq);
+
+	     return ResponseEntity.ok(
+	         new ResponseMessage<>(
+	             HttpStatus.OK.value(),
+	             HttpStatus.OK.name(),
+	             "HR details updated successfully",
+	             updatedHr
+	         )
+	     );
+	 }
+
+ 
+	    
 }

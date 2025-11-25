@@ -177,49 +177,7 @@ public class HrServiceImpl implements HrService{
 		return updateEmpDto;
 	}
 
-                            // ---------- UPDATE EMPLOYEE DETAILS ----------
-	 
-//    @Override
-//    public EmployeeDetailsResponseDto updateEmployee(Long id, UpdateEmployeeRequestDto updateReq) {
-//        Employee emp = empRepo.findById(id)
-//                .orElseThrow(() -> new CustomeException("Employee not found with id: " + id));
-//
-//        if (updateReq.getFirstName() != null && !updateReq.getFirstName().isEmpty())
-//            emp.setFirstName(updateReq.getFirstName());
-//        
-//        if (updateReq.getLastName() != null && !updateReq.getLastName().isEmpty())
-//            emp.setLastName(updateReq.getLastName());
-//        
-//        if (updateReq.getEmail() != null && !updateReq.getEmail().isEmpty())
-//            emp.setEmail(updateReq.getEmail());
-//        
-//        if (updateReq.getMobile() != null && !updateReq.getMobile().isEmpty())
-//            emp.setMobile(updateReq.getMobile());
-//        
-//        if (updateReq.getCardNumber() != null && !updateReq.getCardNumber().isEmpty())
-//            emp.setCardNumber(updateReq.getCardNumber());
-//        
-//        if (updateReq.getJobRole() != null && !updateReq.getJobRole().isEmpty())
-//            emp.setJobRole(updateReq.getJobRole());
-//        
-//        if (updateReq.getDomain() != null && !updateReq.getDomain().isEmpty())
-//            emp.setDomain(updateReq.getDomain());
-//        
-//        if (updateReq.getGender() != null && !updateReq.getGender().isEmpty())
-//            emp.setGender(updateReq.getGender());
-//        
-//  
-//        if (updateReq.getSalary() != null)
-//            emp.setSalary(updateReq.getSalary());
-//        
-//      
-//        if (updateReq.getPaidLeaves() != 0)
-//            emp.setPaidLeaves(updateReq.getPaidLeaves());
-//        
-//        Employee updatedEmp = empRepo.save(emp);
-//
-//        return mapper.map(updatedEmp, EmployeeDetailsResponseDto.class);
-//    }
+                          
 	
 	@Override
 	public EmployeeDetailsResponseDto updateEmployee(Long id, UpdateEmployeeRequestDto updateReq) {
