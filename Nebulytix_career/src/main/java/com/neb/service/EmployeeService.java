@@ -1,0 +1,33 @@
+
+package com.neb.service;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import com.neb.dto.*;
+import com.neb.entity.*;
+
+public interface EmployeeService {
+
+    // Login verification for employee
+    public EmployeeResponseDto login(LoginRequestDto loginReq);
+
+    // Generate payslip for a specific employee and month
+    public Payslip generatePayslip(Long employeeId, String monthYear) throws Exception;
+
+    // Get employee details by ID
+    public Employee getEmployeeById(Long id);
+
+    // Get all tasks assigned to an employee
+    public List<Work> getTasksByEmployee(Long employeeId);
+
+    // Submit task report after completion
+    public WorkResponseDto submitReport(Long taskId, String status, String reportDetails, MultipartFile reportAttachment, LocalDate submittedDate);
+
+    // Get employee details by email
+    public EmployeeDetailsResponseDto getEmployeeByEmail(String email);
+    
+    public String submitDailyReport(AddDailyReportRequestDto request);
+}
