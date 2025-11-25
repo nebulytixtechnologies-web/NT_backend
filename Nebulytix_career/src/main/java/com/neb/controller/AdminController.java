@@ -64,6 +64,14 @@ public class AdminController {
 		return ResponseEntity.ok(new ResponseMessage<EmployeeResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "admin login successfully", loginRes));
 	}
 	
+	 //for adding admin
+	@PostMapping("/addadmin")
+	public ResponseEntity<ResponseMessage<AddEmployeeResponseDto>> addAdmin(@RequestBody AddEmployeeRequestDto addEmpReq){
+		
+		AddEmployeeResponseDto addEmpRes = adminService.addAdmin(addEmpReq);
+		
+		return ResponseEntity.ok(new ResponseMessage<AddEmployeeResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Admin added successfully", addEmpRes));
+	}
 	
 	//for adding Hr
 	@PostMapping("/addhr")
@@ -115,7 +123,13 @@ public class AdminController {
 	        List<WorkResponseDto> works = adminService.getWorkByEmployee(empId);
 	        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Work fetched for employee", works));
 	    }
-	    
+	    // delete  admin by id 
+	    @DeleteMapping("/delete/admin/{id}")//http://localhost:5054/api/admin/delete/admin/3
+	    public ResponseEntity<ResponseMessage<?>> deleteAdmin(@PathVariable Long id){
+	    	String deleteRes = adminService.deleteAdmin(id);
+	    	return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Admin deleted successfully", deleteRes));
+	    }
+	    // delete hr by id
 	    @DeleteMapping("/delete/hr/{id}")//http://localhost:5054/api/admin/delete/hr/3
 	    public ResponseEntity<ResponseMessage<?>> deleteHr(@PathVariable Long id){
 	    	String deleteRes = adminService.deleteHr(id);

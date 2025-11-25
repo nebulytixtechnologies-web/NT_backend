@@ -41,4 +41,8 @@ public interface AdminService {
     public Page<EmployeeDetailsResponseDto> getHrList(int page, int size, String sort);
     EmployeeDetailsResponseDto updateHrDetails(Long id, UpdateEmployeeRequestDto dto);
 
+
+	public AddEmployeeResponseDto addAdmin(AddEmployeeRequestDto addEmpReq);
+
+	public String deleteAdmin(Long id);
 }
