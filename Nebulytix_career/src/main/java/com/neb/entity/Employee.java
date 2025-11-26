@@ -57,6 +57,9 @@ public class Employee {
     private int paidLeaves;
     private String password;
     
+    private String profilePictureUrl;
+    private String profilePicturePath;
+    
     // Bank and tax-related details
     private String bankAccountNumber;
     private String ifscCode;

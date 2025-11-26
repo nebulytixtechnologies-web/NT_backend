@@ -30,4 +30,7 @@ public interface EmployeeService {
     public EmployeeDetailsResponseDto getEmployeeByEmail(String email);
     
     public String submitDailyReport(AddDailyReportRequestDto request);
+    
+    public String uploadProfilePicture(Long employeeId, MultipartFile file);
+
 }

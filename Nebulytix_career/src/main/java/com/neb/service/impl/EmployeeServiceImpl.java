@@ -58,6 +58,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     
     @Value("${task.attachment}")
     private String attachmentFolder;
+    
+    @Value("${profile.picture.folder}")
+    private String baseProfileFolder;
+
 
     // --------- LOGIN ----------
     @Override
@@ -78,7 +82,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     
     
     //Getting employee By ID
-    
+    @Override
     public Employee getEmployeeById(Long id) {
         return empRepo.findById(id).orElseThrow(() -> new CustomeException("Employee not found with id: "+id));
     }
@@ -238,5 +242,60 @@ public class EmployeeServiceImpl implements EmployeeService {
             return "failed to submit report";
         }
     }
+	
+	@Override
+	public String uploadProfilePicture(Long employeeId, MultipartFile file) {
+	    Employee emp = empRepo.findById(employeeId)
+	        .orElseThrow(() -> new CustomeException("employee not found with id: " + employeeId));
+
+	    if (file == null || file.isEmpty()) {
+	        throw new CustomeException("No file provided");
+	    }
+
+	    // Validate content type (image) - basic check
+	    String contentType = file.getContentType();
+	    if (contentType == null || !contentType.startsWith("image/")) {
+	        throw new CustomeException("Only image files are allowed");
+	    }
+
+	    //check size (e.g., <= 5MB)
+	    long maxSize = 5 * 1024 * 1024;
+	    if (file.getSize() > maxSize) {
+	        throw new CustomeException("File too large. Max allowed is 5 MB");
+	    }
+
+	    // Build filename - use UUID to avoid name collisions
+	    String original = file.getOriginalFilename();
+	    String ext = "";
+	    if (original != null && original.contains(".")) {
+	        ext = original.substring(original.lastIndexOf('.'));
+	    }
+	    String filename = java.util.UUID.randomUUID().toString() + ext;
+
+	    try {
+	        // base folder from property
+	        Path uploadDir = Paths.get(baseProfileFolder);
+	        if (!Files.exists(uploadDir)) {
+	            Files.createDirectories(uploadDir);
+	        }
+
+	        Path target = uploadDir.resolve(filename);
+	        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+	        // public URL served by resource handler
+	        String publicUrl = "/uploads/profiles/" + filename;
+
+	        // update employee entity
+	        emp.setProfilePictureUrl(publicUrl);
+	        emp.setProfilePicturePath(target.toAbsolutePath().toString());
+	        empRepo.save(emp);
+
+	        return publicUrl;
+	    } catch (IOException e) {
+	        throw new CustomeException("Failed to save profile picture: " + e.getMessage());
+	    }
+	}
+	
+	
 }
 	       

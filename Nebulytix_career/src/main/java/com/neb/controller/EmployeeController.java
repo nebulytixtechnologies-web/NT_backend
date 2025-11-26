@@ -118,5 +118,14 @@ public class EmployeeController {
                 )
         );
     }
+    
+    @PutMapping("/{id}/profile-picture")
+    public ResponseEntity<ResponseMessage<String>> uploadProfilePicture(
+            @PathVariable Long id,
+            @RequestParam("profileImage") MultipartFile profileImage) {
 
+        String imageUrl = employeeService.uploadProfilePicture(id, profileImage);
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(),
+                "Profile picture uploaded successfully", imageUrl));
+    }
 }
