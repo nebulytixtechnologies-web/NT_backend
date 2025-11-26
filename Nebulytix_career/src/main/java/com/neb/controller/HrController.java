@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.neb.dto.AddEmployeeRequestDto;
 import com.neb.dto.AddEmployeeResponseDto;
 import com.neb.dto.AddJobRequestDto;
+import com.neb.dto.EmailRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
 import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.GeneratePayslipRequest;
@@ -218,12 +219,9 @@ public class HrController {
     @PutMapping("/job/updateStatus/{applicationId}/{status}")
     public ResponseEntity<?> updateJobStatus(
             @PathVariable Long applicationId,
-            @PathVariable Boolean status
-         
-            ) {
+            @PathVariable Boolean status) {
 
-
-        service.updateJobApplicationStatus(applicationId, status);
+    	service.updateJobApplicationStatus(applicationId, status);
 
         String msg = status ? "Applicant Shortlisted" : "Applicant Rejected";
 
@@ -231,6 +229,27 @@ public class HrController {
                 new ResponseMessage<>(200, "OK", msg, null)
         );
     }
+    @PostMapping("/job/sendShortlistedEmails")
+    public ResponseEntity<?> sendShortlistedEmails(@RequestBody EmailRequestDto emailRequest) {
+
+    	service.sendEmailsToShortlisted(emailRequest.getSubject(), emailRequest.getMessage());
+
+        return ResponseEntity.ok(
+                new ResponseMessage<>(200, "OK", "Emails sent to all shortlisted applicants", null)
+        );
+    }
+    @PostMapping("/job/sendRejectedEmails")
+    
+    public ResponseEntity<?> sendRejectedEmails(@RequestBody EmailRequestDto emailRequest) {
+
+    	service.sendEmailsToRejected(emailRequest.getSubject(), emailRequest.getMessage());
+
+        return ResponseEntity.ok(
+                new ResponseMessage<>(200, "OK", "Emails sent to all rejected applicants", null)
+        );
+    }
+
+
     @DeleteMapping("/job/delete/{jobId}")
     public ResponseEntity<?> deleteJob(@PathVariable Long jobId) {
 
@@ -240,6 +259,7 @@ public class HrController {
                 new ResponseMessage<>(200, "OK", "Job deleted successfully", result)
         );
     }
+   
     @PostMapping("/logout")
     public ResponseEntity<ResponseMessage<String>> logout() {
 
