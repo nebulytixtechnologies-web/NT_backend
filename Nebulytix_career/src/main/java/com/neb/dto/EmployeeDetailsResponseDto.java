@@ -22,6 +22,7 @@ public class EmployeeDetailsResponseDto {
     private int daysPresent;
     private int paidLeaves;
     private String loginRole;
+    private String profilePictureUrl;
     
     private String bankAccountNumber;
     private String ifscCode;
