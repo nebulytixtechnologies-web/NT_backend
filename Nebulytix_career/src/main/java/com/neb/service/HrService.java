@@ -21,7 +21,7 @@ public interface HrService {
     public AddEmployeeResponseDto addEmployee(AddEmployeeRequestDto addEmpReq);
 
     // HR login
-    public EmployeeResponseDto login(LoginRequestDto loginReq);
+    public EmployeeDetailsResponseDto login(LoginRequestDto loginReq);
 
     // Get all employee details
     public List<EmployeeDetailsResponseDto> getEmployeeList();

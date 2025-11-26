@@ -65,7 +65,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     // --------- LOGIN ----------
     @Override
-    public EmployeeResponseDto login(LoginRequestDto loginReq) {
+    public EmployeeDetailsResponseDto login(LoginRequestDto loginReq) {
 
         // fetch employee from DB
         Employee emp = empRepo.findByEmailAndPasswordAndLoginRole(
@@ -75,7 +75,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         ).orElseThrow(() -> new CustomeException("Invalid credentials. Please check your email and password and login role"));
 
         // map entity to DTO
-        EmployeeResponseDto loginRes = mapper.map(emp, EmployeeResponseDto.class);
+        EmployeeDetailsResponseDto loginRes = mapper.map(emp, EmployeeDetailsResponseDto.class);
 
         return loginRes;
     }
@@ -294,8 +294,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 	    } catch (IOException e) {
 	        throw new CustomeException("Failed to save profile picture: " + e.getMessage());
 	    }
-	}
-	
-	
+	}		
 }
 	       
