@@ -54,7 +54,12 @@ public interface HrService {
      
      public String getDailyReportUrl(LocalDate reportDate);
     
- 	void updateJobApplicationStatus(Long applicationId, Boolean status);
+     void updateJobApplicationStatus(Long applicationId, Boolean status);
+
+     void sendEmailsToShortlisted(String subject, String message);
+
+     void sendEmailsToRejected(String subject, String message);
+     
  	String deleteJob(Long jobId);
 
 }

@@ -357,57 +357,46 @@ public class HrServiceImpl implements HrService{
         return reports.get(0).getDailyReportUrl();
     }
 	
-	@Override
-	public void updateJobApplicationStatus(Long applicationId, Boolean status) {
-		
-		JobApplication app = jobApplicationRepository.findById(applicationId)
-	            .orElseThrow(() -> new RuntimeException("Application not found"));
+    public void updateJobApplicationStatus(Long applicationId, Boolean status) {
 
-	    if (status) {  // TRUE = SHORTLISTED
-	        app.setStatus("SHORTLISTED");
+        JobApplication app = jobApplicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
 
-	        emailService.sendApplicationMail(
-	                app.getEmail(),
-	                "Congratulations! You Have Been Shortlisted 🎉",
-	                "Dear " + app.getFullName() + ",\n\n"
-	                + "We are pleased to inform you that your application has been *shortlisted* for the next stage of the recruitment process at "
-	                + "NEBULYTIX TECHNOLOGIES PRIVATE LIMITED.\n\n"
-	                + "Your skills and experience stood out among many applicants, and we truly appreciate the time you invested in applying.\n\n"
-	                + "Our HR team will reach out to you soon with details regarding the next round, including schedule, instructions, and documentation (if required).\n\n"
-	                + "If you have any queries, feel free to contact us:\n"
-	                + "📧 hr@nebulytixtechnologies.com\n"
-	                + "📞 7660999155 / 8125263737\n\n"
-	                + "We wish you the very best for the upcoming steps!\n\n"
-	                + "Warm Regards,\n"
-	                + "HR Team\n"
-	                + "NEBULYTIX TECHNOLOGIES PRIVATE LIMITED"
-	        );
+        if (status) {
+            app.setStatus("SHORTLISTED");
+        } else {
+            app.setStatus("REJECTED");
+        }
 
-	    } else { // FALSE = REJECTED
-	        app.setStatus("REJECTED");
+        jobApplicationRepository.save(app);
+    }
+    @Override
+    public void sendEmailsToShortlisted(String subject, String message) {
 
-	        emailService.sendApplicationMail(
-	                app.getEmail(),
-	                "Update on Your Application",
-	                "Dear " + app.getFullName() + ",\n\n"
-	                + "Thank you for your interest in joining NEBULYTIX TECHNOLOGIES PRIVATE LIMITED and for the time you spent applying.\n\n"
-	                + "After careful consideration, we regret to inform you that your application has not been shortlisted at this stage.\n\n"
-	                + "This decision was difficult, as we received many strong applications. "
-	                + "We truly appreciate your effort and encourage you to apply again in the future when suitable opportunities arise.\n\n"
-//	                + "If you have any queries or need further clarification, you may contact us:\n"
-//	                + "📧 hr@nebulytixtechnologies.com\n"
-//	                + "📞 7660999155 / 8125263737\n\n"
-	                + "Thank you once again for considering us. We wish you success in all your future endeavours.\n\n"
-	                + "Warm Regards,\n"
-	                + "HR Team\n"
-	                + "NEBULYTIX TECHNOLOGIES PRIVATE LIMITED"
-	        );
-	    }
+        List<JobApplication> shortlisted = jobApplicationRepository.findByStatus("SHORTLISTED");
 
-	    jobApplicationRepository.save(app);
-	    
-		
-	}
+        if (shortlisted.isEmpty()) {
+            throw new RuntimeException("No shortlisted applicants found");
+        }
+
+        for (JobApplication app : shortlisted) {
+            emailService.sendApplicationMail(app.getEmail(), subject, message);
+        }
+    }
+    @Override
+    public void sendEmailsToRejected(String subject, String message) {
+
+        List<JobApplication> rejected = jobApplicationRepository.findByStatus("REJECTED");
+
+        if (rejected.isEmpty()) {
+            throw new RuntimeException("No rejected applicants found");
+        }
+
+        for (JobApplication app : rejected) {
+            emailService.sendApplicationMail(app.getEmail(), subject, message);
+        }
+    }
+
 	@Override
 	public String deleteJob(Long jobId) {
 
