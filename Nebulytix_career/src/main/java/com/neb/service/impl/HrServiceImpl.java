@@ -67,7 +67,7 @@ public class HrServiceImpl implements HrService{
                              // --------- LOGIN ----------
     
     @Override
-    public EmployeeResponseDto login(LoginRequestDto loginReq) {
+    public EmployeeDetailsResponseDto login(LoginRequestDto loginReq) {
 
         // fetch employee from DB
         Employee emp = empRepo.findByEmailAndPasswordAndLoginRole(
@@ -77,7 +77,7 @@ public class HrServiceImpl implements HrService{
         ).orElseThrow(() -> new CustomeException("Invalid credentials. Please check your email and password and login role"));
 
         // map entity to DTO
-        EmployeeResponseDto loginRes = mapper.map(emp, EmployeeResponseDto.class);
+        EmployeeDetailsResponseDto loginRes = mapper.map(emp, EmployeeDetailsResponseDto.class);
 
         return loginRes;
     }

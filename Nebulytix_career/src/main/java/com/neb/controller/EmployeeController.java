@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.neb.dto.AddDailyReportRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
-import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.GeneratePayslipRequest;
 import com.neb.dto.LoginRequestDto;
 import com.neb.dto.PayslipDto;
@@ -40,11 +39,11 @@ public class EmployeeController {
 	private EmployeeService employeeService;
 	
 	@PostMapping("/login")
-	public ResponseEntity<ResponseMessage<EmployeeResponseDto>> login(@RequestBody LoginRequestDto loginReq){
+	public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> login(@RequestBody LoginRequestDto loginReq){
 		
-		EmployeeResponseDto loginRes = employeeService.login(loginReq);
+		EmployeeDetailsResponseDto loginRes = employeeService.login(loginReq);
 		
-		return ResponseEntity.ok(new ResponseMessage<EmployeeResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee login successfully", loginRes));
+		return ResponseEntity.ok(new ResponseMessage<EmployeeDetailsResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee login successfully", loginRes));
 	}
 	
 	@PostMapping("/payslip/generate")

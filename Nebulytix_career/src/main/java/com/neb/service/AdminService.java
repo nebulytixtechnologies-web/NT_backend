@@ -12,7 +12,7 @@ import com.neb.dto.*;
 public interface AdminService {
 
     // For admin login verification
-    public EmployeeResponseDto login(LoginRequestDto loginReq);
+    public EmployeeDetailsResponseDto login(LoginRequestDto loginReq);
 
     // For adding a new employee
     public AddEmployeeResponseDto addEmployee(AddEmployeeRequestDto addEmpReq);
