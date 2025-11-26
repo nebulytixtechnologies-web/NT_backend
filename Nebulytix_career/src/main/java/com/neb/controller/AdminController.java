@@ -57,11 +57,11 @@ public class AdminController {
 	private EmployeeService employeeService;
 	
 	@PostMapping("/login")
-	public ResponseEntity<ResponseMessage<EmployeeResponseDto>> login(@RequestBody LoginRequestDto loginReq){
+	public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> login(@RequestBody LoginRequestDto loginReq){
 		
-		EmployeeResponseDto loginRes = adminService.login(loginReq);
+		EmployeeDetailsResponseDto loginRes = adminService.login(loginReq);
 		
-		return ResponseEntity.ok(new ResponseMessage<EmployeeResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "admin login successfully", loginRes));
+		return ResponseEntity.ok(new ResponseMessage<EmployeeDetailsResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "admin login successfully", loginRes));
 	}
 	
 	 //for adding admin
@@ -82,11 +82,6 @@ public class AdminController {
 		return ResponseEntity.ok(new ResponseMessage<AddEmployeeResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Hr added successfully", addEmpRes));
 	}
 	
-	/**
-     * Fetches a list of all employees in the organization.
-     * 
-     * @return Response containing a list of employee details.
-     */
 	//get employee list
 	@GetMapping("/getEmpList")
 	public ResponseEntity<ResponseMessage<List<EmployeeDetailsResponseDto>>> getEmployeeList(){
@@ -135,14 +130,6 @@ public class AdminController {
 	    	String deleteRes = adminService.deleteHr(id);
 	    	return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "hr deleted successfully", deleteRes));
 	    }
-	    
-//	    @PutMapping("/update/hr/{id}")//http://localhost:5054/api/admin/update/hr/4
-//		public ResponseEntity<ResponseMessage<UpdateEmployeeResponseDto>> updateHr(@PathVariable Long id,@RequestBody UpdateEmployeeRequestDto updateReq){
-//			
-//			UpdateEmployeeResponseDto updatedhrRes = adminService.updateHrDetails(id, updateReq);
-//			
-//			return ResponseEntity.ok(new ResponseMessage<UpdateEmployeeResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "hr details updated successfully", updatedhrRes));
-//		}
 	    
 	    @GetMapping("/getEmp/{id}")
 		public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> getEmployee(@PathVariable Long id){
@@ -228,14 +215,6 @@ public class AdminController {
 	                )
 	        );
 	    }
-//	    @GetMapping("/hr/{id}")
-//	    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> getHrById(@PathVariable Long id) {
-//	        EmployeeDetailsResponseDto hr = adminService.getHrById(id);
-//	        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "HR details fetched", hr));
-//	    }
-
-	 // file: com/neb/controller/AdminController.java
-	 // Replace your previous update-hr endpoint with:
 
 	 @PutMapping("/update/hr/{id}")
 	 public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> updateHrDetails(

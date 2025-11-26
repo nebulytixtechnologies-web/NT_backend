@@ -12,4 +12,5 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 	boolean existsByEmailIgnoreCase(String email);
 	Optional<JobApplication> findByEmailIgnoreCase(String email);
 	List<JobApplication> findByJob_Id(Long jobId);
+	List<JobApplication> findByStatus(String status);
 }
