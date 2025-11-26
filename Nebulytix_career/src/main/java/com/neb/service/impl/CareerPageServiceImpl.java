@@ -107,6 +107,12 @@ public class CareerPageServiceImpl implements CareerPageService {
 	        
             JobApplication saveApplication = jobApplicationRepository.save(application);
             
+            emailService.sendConfirmationEmail(
+                    saveApplication.getEmail(),
+                    saveApplication.getFullName(),
+                    job.getJobTitle()
+            );
+            
             AddJobApplicationResponseDto applicationRes = new AddJobApplicationResponseDto();
             
             applicationRes.setId(saveApplication.getId());
