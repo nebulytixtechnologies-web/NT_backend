@@ -49,11 +49,11 @@ public class HrController {
 	
 	
 	@PostMapping("/login")
-	public ResponseEntity<ResponseMessage<EmployeeResponseDto>> login(@RequestBody LoginRequestDto loginReq){
+	public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> login(@RequestBody LoginRequestDto loginReq){
 		
-		EmployeeResponseDto loginRes = service.login(loginReq);
+		EmployeeDetailsResponseDto loginRes = service.login(loginReq);
 		
-		return ResponseEntity.ok(new ResponseMessage<EmployeeResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Hr login successfully", loginRes));
+		return ResponseEntity.ok(new ResponseMessage<EmployeeDetailsResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Hr login successfully", loginRes));
 	}
 	
 	//adding employee

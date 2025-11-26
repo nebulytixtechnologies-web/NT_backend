@@ -12,7 +12,7 @@ import com.neb.entity.*;
 public interface EmployeeService {
 
     // Login verification for employee
-    public EmployeeResponseDto login(LoginRequestDto loginReq);
+    public EmployeeDetailsResponseDto login(LoginRequestDto loginReq);
 
     // Generate payslip for a specific employee and month
     public Payslip generatePayslip(Long employeeId, String monthYear) throws Exception;
