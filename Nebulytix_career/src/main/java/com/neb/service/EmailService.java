@@ -43,8 +43,31 @@ public class EmailService {
     // ✅ Send confirmation after successful application
     public void sendConfirmationEmail(String to, String fullName, String jobTitle) {
         String subject = "Job Application Submitted Successfully";
-        String text = "Dear " + fullName + ",\n\nYour application for the position '" + jobTitle
-                + "' has been successfully submitted.\nOur HR team will review it and get back to you soon.\n\nBest Regards,\nNeb HR Team";
+        String text = 
+                "Dear " + fullName + ",\n\n" +
+                "Thank you for applying for the position of " + jobTitle + " at Nebulytix Technologies.\n\n" + 
+                "We are pleased to inform you that your application has been successfully received by our recruitment team. " +
+                "Our hiring specialists will carefully review your resume and evaluate your profile against the role requirements.\n\n" +
+
+                "If your qualifications match our current needs, we will reach out to you for the next steps, which may include:\n" +
+                "• Initial HR screening\n" +
+                "• Technical assessment or assignment\n" +
+                "• Technical interview with our engineering panel\n" +
+                "• Final discussion with the management team\n\n" +
+
+                "Please note that this process may take a few days depending on the volume of applications. " +
+                "We appreciate your patience and interest in joining our organization.\n\n" +
+
+                "In the meantime, feel free to explore more about our culture, technologies, and ongoing projects on our website " +
+                "and social media pages.\n\n" +
+
+                "If you have any questions, you may reply to this email or contact our HR support team.\n\n" +
+
+                "We wish you the very best in the selection process.\n\n" +
+                "Warm Regards,\n" +
+                "HR Team,\n" +
+                "Nebulytix Technologies";
+
         sendApplicationMail(to, subject, text);
     }
 }
