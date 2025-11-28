@@ -1,4 +1,3 @@
-
 package com.neb.service;
 
 import java.time.LocalDate;
@@ -8,58 +7,49 @@ import com.neb.dto.AddEmployeeRequestDto;
 import com.neb.dto.AddEmployeeResponseDto;
 import com.neb.dto.AddJobRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
-import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.JobDetailsDto;
 import com.neb.dto.LoginRequestDto;
 import com.neb.dto.PayslipDto;
 import com.neb.dto.UpdateEmployeeRequestDto;
 import com.neb.dto.UpdatePasswordRequestDto;
+import com.neb.entity.JobApplication;
 
 public interface HrService {
 
-    // Add a new employee
-    public AddEmployeeResponseDto addEmployee(AddEmployeeRequestDto addEmpReq);
-
-    // HR login
-    public EmployeeDetailsResponseDto login(LoginRequestDto loginReq);
-
-    // Get all employee details
-    public List<EmployeeDetailsResponseDto> getEmployeeList();
-
-    // Get employee details by ID
-    public EmployeeDetailsResponseDto getEmployee(Long id);
-
-    // Delete employee by ID
-    public String deleteById(Long id);
-
-    // Download an employee's payslip (PDF)
-    public byte[] downloadPayslip(Long payslipId) throws Exception;
-
-    // List all payslips for a specific employee
-    public List<PayslipDto> listPayslipsForEmployee(Long employeeId);
-
-    // Add or update employee attendance
-    public EmployeeDetailsResponseDto addAttendence(Long id, int days);
-
-    // Update existing employee information
+    // Employee management
+    AddEmployeeResponseDto addEmployee(AddEmployeeRequestDto addEmpReq);
+    EmployeeDetailsResponseDto login(LoginRequestDto loginReq);
+    List<EmployeeDetailsResponseDto> getEmployeeList();
+    EmployeeDetailsResponseDto getEmployee(Long id);
+    String deleteById(Long id);
+    EmployeeDetailsResponseDto addAttendence(Long id, int days);
     EmployeeDetailsResponseDto updateEmployee(Long id, UpdateEmployeeRequestDto updateReq);
-    
     EmployeeDetailsResponseDto updatePassword(Long id, UpdatePasswordRequestDto updatePasswordRequestDto);
 
-     public JobDetailsDto addJob(AddJobRequestDto jobRequestDto);
-     
-     public List<JobDetailsDto> getAllJobs();
-     
-     public String generateDailyReport(LocalDate reportDate);
-     
-     public String getDailyReportUrl(LocalDate reportDate);
-    
-     void updateJobApplicationStatus(Long applicationId, Boolean status);
+    // Payslip
+    byte[] downloadPayslip(Long payslipId) throws Exception;
+    List<PayslipDto> listPayslipsForEmployee(Long employeeId);
 
-     void sendEmailsToShortlisted(String subject, String message);
+    // Job management
+    JobDetailsDto addJob(AddJobRequestDto jobRequestDto);
+    List<JobDetailsDto> getAllJobs();
+    String deleteJob(Long jobId);
 
-     void sendEmailsToRejected(String subject, String message);
-     
- 	String deleteJob(Long jobId);
+    // Daily report
+    String generateDailyReport(LocalDate reportDate);
+    String getDailyReportUrl(LocalDate reportDate);
 
+    // Job application
+    void updateJobApplicationStatus(Long applicationId, Boolean status);
+    void sendInvitedEmailAndUpdateStatus(Long applicantId, String subject, String message);
+    void sendRejectedEmailAndUpdateStatus(Long applicantId, String subject, String message);
+
+//    // Send email to all applicants by status
+//    void sendEmailsToShortlisted(String subject, String message);
+//    void sendEmailsToRejected(String subject, String message);
+    List<JobApplication> sendEmailsToShortlisted(String subject, String message);
+    List<JobApplication> sendEmailsToRejected(String subject, String message);
+
+    // Single applicant email
+    void sendEmailToSingleApplicant(Long applicantId, String subject, String message);
 }

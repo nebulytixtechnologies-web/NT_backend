@@ -1,4 +1,5 @@
 package com.neb.service.impl;
+import java.io.File;
 import java.io.IOException;
 
 import java.nio.file.Files;
@@ -294,6 +295,36 @@ public class EmployeeServiceImpl implements EmployeeService {
 	    } catch (IOException e) {
 	        throw new CustomeException("Failed to save profile picture: " + e.getMessage());
 	    }
-	}		
+	}	
+	
+	@Override
+	public boolean deleteProfilePicture(Long employeeId) {
+
+	    Employee emp = empRepo.findById(employeeId)
+	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+	    String imagePath = emp.getProfilePicturePath(); // FULL path (absolute path)
+
+	    if (imagePath == null || imagePath.isEmpty()) {
+	        return false; // nothing to delete
+	    }
+
+	    File file = new File(imagePath);
+
+	    // delete file physically from folder
+	    if (file.exists()) {
+	        boolean deleted = file.delete();
+	        System.out.println("File deleted: " + deleted);
+	    }
+
+	    // remove from DB
+	    emp.setProfilePicturePath(null);
+	    emp.setProfilePictureUrl(null); // if you use URLs
+	    empRepo.save(emp);
+
+	    return true;
+	}
+
+
 }
 	       

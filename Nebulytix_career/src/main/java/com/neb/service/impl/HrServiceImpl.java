@@ -17,7 +17,6 @@ import com.neb.dto.AddEmployeeRequestDto;
 import com.neb.dto.AddEmployeeResponseDto;
 import com.neb.dto.AddJobRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
-import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.JobDetailsDto;
 import com.neb.dto.LoginRequestDto;
 import com.neb.dto.PayslipDto;
@@ -38,312 +37,176 @@ import com.neb.service.EmailService;
 import com.neb.service.HrService;
 import com.neb.util.ReportGeneratorPdf;
 
-
 @Service
-public class HrServiceImpl implements HrService{
+public class HrServiceImpl implements HrService {
 
-	@Autowired
+    @Autowired
     private EmployeeRepository empRepo;
-	
-	@Autowired
-	private PayslipRepository payslipRepo;
-	
-	@Autowired
-	private JobRepository jobRepository;
-	
-	@Autowired
-	private DailyReportRepository dailyReportRepository;
+
+    @Autowired
+    private PayslipRepository payslipRepo;
+
+    @Autowired
+    private JobRepository jobRepository;
+
+    @Autowired
+    private DailyReportRepository dailyReportRepository;
+
+    @Autowired
+    private JobApplicationRepository jobApplicationRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private ModelMapper mapper;
-    @Autowired
-    private EmailService emailService;
-    @Autowired
-    private JobApplicationRepository jobApplicationRepository;
-    
+
     @Value("${daily-report.folder-path}")
     private String dailyReportFolderPath;
-    
-                             // --------- LOGIN ----------
-    
+
+    // ======================= EMPLOYEE METHODS =========================
     @Override
     public EmployeeDetailsResponseDto login(LoginRequestDto loginReq) {
-
-        // fetch employee from DB
         Employee emp = empRepo.findByEmailAndPasswordAndLoginRole(
-                loginReq.getEmail(),
-                loginReq.getPassword(),
-                loginReq.getLoginRole()
-        ).orElseThrow(() -> new CustomeException("Invalid credentials. Please check your email and password and login role"));
-
-        // map entity to DTO
-        EmployeeDetailsResponseDto loginRes = mapper.map(emp, EmployeeDetailsResponseDto.class);
-
-        return loginRes;
+                loginReq.getEmail(), loginReq.getPassword(), loginReq.getLoginRole()
+        ).orElseThrow(() -> new CustomeException("Invalid credentials"));
+        return mapper.map(emp, EmployeeDetailsResponseDto.class);
     }
-    
-	
+
     @Override
     public AddEmployeeResponseDto addEmployee(AddEmployeeRequestDto addEmpReq) {
+        if (empRepo.existsByEmail(addEmpReq.getEmail()))
+            throw new CustomeException("Employee with email " + addEmpReq.getEmail() + " already exists");
 
-        // check if employee with same email already exists
-        if (empRepo.existsByEmail(addEmpReq.getEmail())) {
-        	 throw new CustomeException("Employee with email " + addEmpReq.getEmail() + " already exists");
-        }
-
-        // map DTO to entity
-       
         Employee emp = mapper.map(addEmpReq, Employee.class);
         emp.setLoginRole("employee");
-
-        // save entity
         Employee savedEmp = empRepo.save(emp);
-      
-
-        // map saved entity to response DTO
-        AddEmployeeResponseDto addEmpRes = mapper.map(savedEmp, AddEmployeeResponseDto.class);
-
-        return addEmpRes;
+        return mapper.map(savedEmp, AddEmployeeResponseDto.class);
     }
-                                       // --------- EMPLOYEE LIST SECTION ----------
-   
+
     @Override
     public List<EmployeeDetailsResponseDto> getEmployeeList() {
-		
-		//getting all employee list without admin
-	    List<Employee> employeeList = empRepo.findByLoginRoleNotIn(List.of("admin","hr"));
-	    
-	    if(employeeList==null) {
-	    	 throw new CustomeException("Employees list not found");
-	    }
-	    
-	    List<EmployeeDetailsResponseDto> empListRes = employeeList.stream().map(emp->{
-	    	
-	    	EmployeeDetailsResponseDto empResDto = mapper.map(emp, EmployeeDetailsResponseDto.class);
-	    	return empResDto;
-	    }).collect(Collectors.toList());
-	    
-	    return empListRes;
-	}
-        // --------- GET SINGLE EMPLOYEE SECTION ----------
-   
-	@Override
-	public EmployeeDetailsResponseDto getEmployee(Long id) {
-
-		Employee emp = empRepo.findById(id).orElseThrow(()->new CustomeException("Employee not founce wuith id :"+id));
-		return mapper.map(emp, EmployeeDetailsResponseDto.class);
-		
-	}
-	      // ---------  DELETE EMPLOYEE SECTION ----------
-	
-	@Override
-	public String deleteById(Long id) {
-		empRepo.deleteById(id);
-		return id+" Employee Deleted Successfully";
-	}
-	
-	       // ---------  PAYSLIP DOWNLOAD SECTION ----------
-	
-	@Override
-	 public byte[] downloadPayslip(Long payslipId) throws Exception {
-        Payslip p = payslipRepo.findById(payslipId)
-            .orElseThrow(() -> new CustomeException("Payslip not found"));
-
-        Path path = Paths.get(p.getPdfPath());
-        return Files.readAllBytes(path);
+        List<Employee> employees = empRepo.findByLoginRoleNotIn(List.of("admin", "hr"));
+        if (employees.isEmpty()) throw new CustomeException("No employees found");
+        return employees.stream().map(emp -> mapper.map(emp, EmployeeDetailsResponseDto.class)).collect(Collectors.toList());
     }
-	 
-	 //getting list of payslips of employee using employee id
-	@Override
-     public List<PayslipDto> listPayslipsForEmployee(Long employeeId) {
-        List<Payslip> payslips = payslipRepo.findByEmployeeId(employeeId);
-        
-        if(payslips==null) {
-        	throw new CustomeException("payslip list is not found with employeeId: "+employeeId);
-        }
-        List<PayslipDto> paySlipDtos = payslips.stream()
-                                        .map(PayslipDto::fromEntity)
-                                        .toList();
-        return paySlipDtos;
+
+    @Override
+    public EmployeeDetailsResponseDto getEmployee(Long id) {
+        Employee emp = empRepo.findById(id).orElseThrow(() -> new CustomeException("Employee not found with id: " + id));
+        return mapper.map(emp, EmployeeDetailsResponseDto.class);
     }
-	                              // ---------  ATTENDANCE SECTION  ----------
-	@Override
-	public EmployeeDetailsResponseDto addAttendence(Long id, int days) {
-		
-		Employee emp = empRepo.findById(id).orElseThrow(()->new CustomeException("employee not found with id:"+id));
-		emp.setDaysPresent(days);
-		Employee savedemp = empRepo.save(emp);
-		EmployeeDetailsResponseDto updateEmpDto= mapper.map(savedemp, EmployeeDetailsResponseDto.class);
-		return updateEmpDto;
-	}
 
-                          
-	
-	@Override
-	public EmployeeDetailsResponseDto updateEmployee(Long id, UpdateEmployeeRequestDto updateReq) {
-	    Employee emp = empRepo.findById(id)
-	            .orElseThrow(() -> new CustomeException("Employee not found with id: " + id));
+    @Override
+    public String deleteById(Long id) {
+        empRepo.deleteById(id);
+        return "Employee with ID " + id + " deleted successfully";
+    }
 
-	    // Basic string fields
-	    if (updateReq.getFirstName() != null && !updateReq.getFirstName().isEmpty())
-	        emp.setFirstName(updateReq.getFirstName());
+    @Override
+    public EmployeeDetailsResponseDto addAttendence(Long id, int days) {
+        Employee emp = empRepo.findById(id).orElseThrow(() -> new CustomeException("Employee not found"));
+        emp.setDaysPresent(days);
+        return mapper.map(empRepo.save(emp), EmployeeDetailsResponseDto.class);
+    }
 
-	    if (updateReq.getLastName() != null && !updateReq.getLastName().isEmpty())
-	        emp.setLastName(updateReq.getLastName());
+    @Override
+    public EmployeeDetailsResponseDto updateEmployee(Long id, UpdateEmployeeRequestDto updateReq) {
+        Employee emp = empRepo.findById(id).orElseThrow(() -> new CustomeException("Employee not found"));
 
-	    if (updateReq.getEmail() != null && !updateReq.getEmail().isEmpty())
-	        emp.setEmail(updateReq.getEmail());
+        if (updateReq.getFirstName() != null) emp.setFirstName(updateReq.getFirstName());
+        if (updateReq.getLastName() != null) emp.setLastName(updateReq.getLastName());
+        if (updateReq.getEmail() != null) emp.setEmail(updateReq.getEmail());
+        if (updateReq.getMobile() != null) emp.setMobile(updateReq.getMobile());
+        if (updateReq.getJobRole() != null) emp.setJobRole(updateReq.getJobRole());
+        if (updateReq.getDomain() != null) emp.setDomain(updateReq.getDomain());
+        if (updateReq.getSalary() != null) emp.setSalary(updateReq.getSalary());
+        if (updateReq.getPaidLeaves() != 0) emp.setPaidLeaves(updateReq.getPaidLeaves());
 
-	    if (updateReq.getMobile() != null && !updateReq.getMobile().isEmpty())
-	        emp.setMobile(updateReq.getMobile());
+        if (updateReq.getBankAccountNumber() != null) emp.setBankAccountNumber(updateReq.getBankAccountNumber());
+        if (updateReq.getIfscCode() != null) emp.setIfscCode(updateReq.getIfscCode());
+        if (updateReq.getBankName() != null) emp.setBankName(updateReq.getBankName());
+        if (updateReq.getPfNumber() != null) emp.setPfNumber(updateReq.getPfNumber());
+        if (updateReq.getPanNumber() != null) emp.setPanNumber(updateReq.getPanNumber());
+        if (updateReq.getUanNumber() != null) emp.setUanNumber(updateReq.getUanNumber());
+        if (updateReq.getEpsNumber() != null) emp.setEpsNumber(updateReq.getEpsNumber());
+        if (updateReq.getEsiNumber() != null) emp.setEsiNumber(updateReq.getEsiNumber());
 
-	    if (updateReq.getCardNumber() != null && !updateReq.getCardNumber().isEmpty())
-	        emp.setCardNumber(updateReq.getCardNumber());
+        return mapper.map(empRepo.save(emp), EmployeeDetailsResponseDto.class);
+    }
 
-	    if (updateReq.getJobRole() != null && !updateReq.getJobRole().isEmpty())
-	        emp.setJobRole(updateReq.getJobRole());
-
-	    if (updateReq.getDomain() != null && !updateReq.getDomain().isEmpty())
-	        emp.setDomain(updateReq.getDomain());
-
-	    if (updateReq.getGender() != null && !updateReq.getGender().isEmpty())
-	        emp.setGender(updateReq.getGender());
-
-	    // Salary (Double wrapper allows null -> no change)
-	    if (updateReq.getSalary() != null)
-	        emp.setSalary(updateReq.getSalary());
-
-	    // paidLeaves — now using Integer in DTO so null means "no change"
-	    if (updateReq.getPaidLeaves() != 0)
-	        emp.setPaidLeaves(updateReq.getPaidLeaves());
-
-	    // --- Bank & Tax details ---
-	    if (updateReq.getBankAccountNumber() != null && !updateReq.getBankAccountNumber().isEmpty())
-	        emp.setBankAccountNumber(updateReq.getBankAccountNumber());
-
-	    if (updateReq.getIfscCode() != null && !updateReq.getIfscCode().isEmpty())
-	        emp.setIfscCode(updateReq.getIfscCode());
-
-	    if (updateReq.getBankName() != null && !updateReq.getBankName().isEmpty())
-	        emp.setBankName(updateReq.getBankName());
-
-	    if (updateReq.getPfNumber() != null && !updateReq.getPfNumber().isEmpty())
-	        emp.setPfNumber(updateReq.getPfNumber());
-
-	    if (updateReq.getPanNumber() != null && !updateReq.getPanNumber().isEmpty())
-	        emp.setPanNumber(updateReq.getPanNumber());
-
-	    if (updateReq.getUanNumber() != null && !updateReq.getUanNumber().isEmpty())
-	        emp.setUanNumber(updateReq.getUanNumber());
-
-	    if (updateReq.getEpsNumber() != null && !updateReq.getEpsNumber().isEmpty())
-	        emp.setEpsNumber(updateReq.getEpsNumber());
-
-	    if (updateReq.getEsiNumber() != null && !updateReq.getEsiNumber().isEmpty())
-	        emp.setEsiNumber(updateReq.getEsiNumber());
-
-	    Employee updatedEmp = empRepo.save(emp);
-	    return mapper.map(updatedEmp, EmployeeDetailsResponseDto.class);
-	}
-    
     @Override
     public EmployeeDetailsResponseDto updatePassword(Long id, UpdatePasswordRequestDto updatePasswordRequestDto) {
-       
-        Employee emp = empRepo.findById(id)
-                .orElseThrow(() -> new CustomeException("Employee not found with id: " + id));
-
-       
+        Employee emp = empRepo.findById(id).orElseThrow(() -> new CustomeException("Employee not found"));
         emp.setPassword(updatePasswordRequestDto.getPassword());
-
-     
-        Employee updatedEmp = empRepo.save(emp);
-
-       
-        return mapper.map(updatedEmp, EmployeeDetailsResponseDto.class);
+        return mapper.map(empRepo.save(emp), EmployeeDetailsResponseDto.class);
     }
 
-	@Override
-	public JobDetailsDto addJob(AddJobRequestDto jobRequestDto) {
-		
-		//dto to entiry
-		Job job = mapper.map(jobRequestDto, Job.class);
-		job.setIsActive(true);
-		
-		LocalDate postedDate = jobRequestDto.getPostedDate() != null
-                ? jobRequestDto.getPostedDate()
-                : LocalDate.now();
+    // ======================= PAYSLIP METHODS =========================
+    @Override
+    public byte[] downloadPayslip(Long payslipId) throws Exception {
+        Payslip p = payslipRepo.findById(payslipId).orElseThrow(() -> new CustomeException("Payslip not found"));
+        return Files.readAllBytes(Paths.get(p.getPdfPath()));
+    }
 
-		job.setPostedDate(postedDate);
-		Job saveJob = jobRepository.save(job);
-		
-		JobDetailsDto jobDetailsRes = mapper.map(saveJob, JobDetailsDto.class);
-		
-		return jobDetailsRes;
-	}
+    @Override
+    public List<PayslipDto> listPayslipsForEmployee(Long employeeId) {
+        List<Payslip> payslips = payslipRepo.findByEmployeeId(employeeId);
+        if (payslips.isEmpty()) throw new CustomeException("No payslips found");
+        return payslips.stream().map(PayslipDto::fromEntity).collect(Collectors.toList());
+    }
 
-	@Override
-	public List<JobDetailsDto> getAllJobs() {
-		
-		List<Job> allJobs = jobRepository.findAll();
-		LocalDate today = LocalDate.now();
-		
-		List<JobDetailsDto> jobListRes= allJobs.stream().map(job->{
-			if (job.getClosingDate() != null && job.getClosingDate().isBefore(today)) {
-                job.setIsActive(false);
-            } else {
-                job.setIsActive(true);
-            }
-			return mapper.map(job, JobDetailsDto.class);
-		}).collect(Collectors.toList());
-		
-		
-		return jobListRes;
-	}
+    // ======================= JOB METHODS =========================
+    @Override
+    public JobDetailsDto addJob(AddJobRequestDto jobRequestDto) {
+        Job job = mapper.map(jobRequestDto, Job.class);
+        job.setIsActive(true);
+        job.setPostedDate(jobRequestDto.getPostedDate() != null ? jobRequestDto.getPostedDate() : LocalDate.now());
+        return mapper.map(jobRepository.save(job), JobDetailsDto.class);
+    }
 
-	@Override
+    @Override
+    public List<JobDetailsDto> getAllJobs() {
+        LocalDate today = LocalDate.now();
+        return jobRepository.findAll().stream().map(job -> {
+            job.setIsActive(job.getClosingDate() == null || !job.getClosingDate().isBefore(today));
+            return mapper.map(job, JobDetailsDto.class);
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public String deleteJob(Long jobId) {
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        jobRepository.delete(job);
+        return "Job deleted successfully";
+    }
+
+    // ======================= DAILY REPORT =========================
+    @Override
     public String generateDailyReport(LocalDate reportDate) {
-
         List<DailyReport> reports = dailyReportRepository.findByReportDate(reportDate);
-
-        if (reports.isEmpty()) {
-            return "No daily reports found for date: " + reportDate;
-        }
-
-        ReportGeneratorPdf reportGeneratorPdf = new ReportGeneratorPdf();
+        if (reports.isEmpty()) return "No daily reports found for date: " + reportDate;
 
         try {
-            // Generate PDF bytes
-            byte[] pdfBytes = reportGeneratorPdf.generateDailyReportForEmployees(reports, reportDate);
+            byte[] pdfBytes = new ReportGeneratorPdf().generateDailyReportForEmployees(reports, reportDate);
 
-            // Use Path for robust path handling
             Path folder = Paths.get(dailyReportFolderPath);
-            // Create folder if not exists
-            if (!Files.exists(folder)) {
-                Files.createDirectories(folder);
-            }
+            if (!Files.exists(folder)) Files.createDirectories(folder);
 
-            String fileName = "daily-report-" + reportDate.toString() + ".pdf";
+            String fileName = "daily-report-" + reportDate + ".pdf";
             Path filePath = folder.resolve(fileName);
 
-            // Write / Replace PDF (atomic write option if desired)
             try (OutputStream os = Files.newOutputStream(filePath)) {
                 os.write(pdfBytes);
             }
 
-            // Construct file URL that matches your resource handler mapping
             String fileUrl = "/reports/daily/" + fileName;
-
-            // Save URL to DB for each report of that date
-            for (DailyReport dr : reports) {
-                dr.setDailyReportUrl(fileUrl);
-            }
+            reports.forEach(r -> r.setDailyReportUrl(fileUrl));
             dailyReportRepository.saveAll(reports);
 
-            // return the URL so controller can send it back to frontend
             return fileUrl;
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new CustomeException("Failed to generate PDF: " + e.getMessage());
         }
     }
@@ -351,28 +214,33 @@ public class HrServiceImpl implements HrService{
     @Override
     public String getDailyReportUrl(LocalDate reportDate) {
         List<DailyReport> reports = dailyReportRepository.findByReportDate(reportDate);
-        if (reports.isEmpty()) {
-            return null;
-        }
-        return reports.get(0).getDailyReportUrl();
+        return reports.isEmpty() ? null : reports.get(0).getDailyReportUrl();
     }
-	
-    public void updateJobApplicationStatus(Long applicationId, Boolean status) {
 
+    // ======================= JOB APPLICATION =========================
+    @Override
+    public void updateJobApplicationStatus(Long applicationId, Boolean status) {
         JobApplication app = jobApplicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
-
-        if (status) {
-            app.setStatus("SHORTLISTED");
-        } else {
-            app.setStatus("REJECTED");
-        }
-
+        app.setStatus(status ? "SHORTLISTED" : "REJECTED");
         jobApplicationRepository.save(app);
     }
-    @Override
-    public void sendEmailsToShortlisted(String subject, String message) {
 
+//    @Override
+//    public void sendEmailsToShortlisted(String subject, String message) {
+//        List<JobApplication> shortlisted = jobApplicationRepository.findByStatus("SHORTLISTED");
+//        if (shortlisted.isEmpty()) throw new RuntimeException("No shortlisted applicants found");
+//        shortlisted.forEach(app -> emailService.sendApplicationMail(app.getEmail(), subject, message));
+//    }
+//
+//    @Override
+//    public void sendEmailsToRejected(String subject, String message) {
+//        List<JobApplication> rejected = jobApplicationRepository.findByStatus("REJECTED");
+//        if (rejected.isEmpty()) throw new RuntimeException("No rejected applicants found");
+//        rejected.forEach(app -> emailService.sendApplicationMail(app.getEmail(), subject, message));
+//    }
+    @Override
+    public List<JobApplication> sendEmailsToShortlisted(String subject, String message) {
         List<JobApplication> shortlisted = jobApplicationRepository.findByStatus("SHORTLISTED");
 
         if (shortlisted.isEmpty()) {
@@ -381,11 +249,15 @@ public class HrServiceImpl implements HrService{
 
         for (JobApplication app : shortlisted) {
             emailService.sendApplicationMail(app.getEmail(), subject, message);
+            app.setStatus("INVITED"); // update status after sending email
+            jobApplicationRepository.save(app);
         }
-    }
-    @Override
-    public void sendEmailsToRejected(String subject, String message) {
 
+        return shortlisted; // return updated applicants
+    }
+
+    @Override
+    public List<JobApplication> sendEmailsToRejected(String subject, String message) {
         List<JobApplication> rejected = jobApplicationRepository.findByStatus("REJECTED");
 
         if (rejected.isEmpty()) {
@@ -394,18 +266,36 @@ public class HrServiceImpl implements HrService{
 
         for (JobApplication app : rejected) {
             emailService.sendApplicationMail(app.getEmail(), subject, message);
+            app.setStatus("TERMINATED"); // update status after sending email
+            jobApplicationRepository.save(app);
         }
+
+        return rejected; // return updated applicants
     }
 
-	@Override
-	public String deleteJob(Long jobId) {
 
-	    Job job = jobRepository.findById(jobId)
-	            .orElseThrow(() -> new RuntimeException("Job not found"));
+    @Override
+    public void sendEmailToSingleApplicant(Long applicantId, String subject, String message) {
+        String email = jobApplicationRepository.findEmailByApplicationId(applicantId);
+        if (email == null) throw new RuntimeException("Applicant not found for ID: " + applicantId);
+        emailService.sendEmail(email, subject, message);
+    }
 
-	    jobRepository.delete(job);
+    @Override
+    public void sendInvitedEmailAndUpdateStatus(Long applicantId, String subject, String message) {
+        JobApplication app = jobApplicationRepository.findById(applicantId)
+                .orElseThrow(() -> new RuntimeException("Applicant not found"));
+        emailService.sendApplicationMail(app.getEmail(), subject, message);
+        app.setStatus("INVITED");
+        jobApplicationRepository.save(app);
+    }
 
-	    return "Job with ID " + jobId + " deleted successfully";
-	}
-
+    @Override
+    public void sendRejectedEmailAndUpdateStatus(Long applicantId, String subject, String message) {
+        JobApplication app = jobApplicationRepository.findById(applicantId)
+                .orElseThrow(() -> new RuntimeException("Applicant not found"));
+        emailService.sendApplicationMail(app.getEmail(), subject, message);
+        app.setStatus("TERMINATED");
+        jobApplicationRepository.save(app);
+    }
 }
