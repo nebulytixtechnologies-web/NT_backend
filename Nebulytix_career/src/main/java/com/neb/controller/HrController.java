@@ -1,6 +1,6 @@
 package com.neb.controller;
+
 import java.time.LocalDate;
-//HrController
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,6 @@ import com.neb.dto.AddEmployeeResponseDto;
 import com.neb.dto.AddJobRequestDto;
 import com.neb.dto.EmailRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
-import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.GeneratePayslipRequest;
 import com.neb.dto.JobDetailsDto;
 import com.neb.dto.LoginRequestDto;
@@ -32,6 +31,7 @@ import com.neb.dto.PayslipDto;
 import com.neb.dto.ResponseMessage;
 import com.neb.dto.UpdateEmployeeRequestDto;
 import com.neb.dto.UpdatePasswordRequestDto;
+import com.neb.entity.JobApplication;
 import com.neb.entity.Payslip;
 import com.neb.service.EmployeeService;
 import com.neb.service.HrService;
@@ -41,73 +41,49 @@ import com.neb.service.HrService;
 @CrossOrigin(origins = "http://localhost:5173")
 public class HrController {
 
-	@Autowired
-	private HrService service;
-	
-	@Autowired
-	private EmployeeService employeeService;
-	
-	
-	@PostMapping("/login")
-	public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> login(@RequestBody LoginRequestDto loginReq){
-		
-		EmployeeDetailsResponseDto loginRes = service.login(loginReq);
-		
-		return ResponseEntity.ok(new ResponseMessage<EmployeeDetailsResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Hr login successfully", loginRes));
-	}
-	
-	//adding employee
-	@PostMapping("/add")
-	public ResponseEntity<ResponseMessage<AddEmployeeResponseDto>> addEmployee(@RequestBody AddEmployeeRequestDto addEmpReq){
-		
-		System.out.println(addEmpReq);
-		AddEmployeeResponseDto addEmpRes = service.addEmployee(addEmpReq);
-		
-		return ResponseEntity.ok(new ResponseMessage<AddEmployeeResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "employee added successfully", addEmpRes));
-	}
-	
-	@GetMapping("/getEmpList")
-	public ResponseEntity<ResponseMessage<List<EmployeeDetailsResponseDto>>> getEmployeeList(){
-		
-		List<EmployeeDetailsResponseDto> employeeList = service.getEmployeeList();
-		
-		return ResponseEntity.ok(new ResponseMessage<List<EmployeeDetailsResponseDto>>(HttpStatus.OK.value(), HttpStatus.OK.name(), "All Employee fetched successfully", employeeList));
-	}
-	
-	
-	@GetMapping("/getEmp/{id}")
-	public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> getEmployee(@PathVariable Long id){
-		
-		EmployeeDetailsResponseDto employee = service.getEmployee(id);
-	
-		
-		return ResponseEntity.ok(new ResponseMessage<EmployeeDetailsResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), " Employee fetched successfully", employee));
-	}
-	
-	
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<ResponseMessage<String>> deleteEmployee(@PathVariable Long id){
-		
-	 String deleteById = service.deleteById(id);
-	
-		
-		return ResponseEntity.ok(new ResponseMessage<String>(HttpStatus.OK.value(), HttpStatus.OK.name(), " Employee deleted successfully", deleteById));
-	}
-	
-	@GetMapping("/payslip/{id}/download")
+    @Autowired
+    private HrService service;
+
+    @Autowired
+    private EmployeeService employeeService;
+
+    @PostMapping("/login")
+    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> login(@RequestBody LoginRequestDto loginReq) {
+        EmployeeDetailsResponseDto loginRes = service.login(loginReq);
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Hr login successfully", loginRes));
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<ResponseMessage<AddEmployeeResponseDto>> addEmployee(@RequestBody AddEmployeeRequestDto addEmpReq) {
+        AddEmployeeResponseDto addEmpRes = service.addEmployee(addEmpReq);
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee added successfully", addEmpRes));
+    }
+
+    @GetMapping("/getEmpList")
+    public ResponseEntity<ResponseMessage<List<EmployeeDetailsResponseDto>>> getEmployeeList() {
+        List<EmployeeDetailsResponseDto> employeeList = service.getEmployeeList();
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "All Employee fetched successfully", employeeList));
+    }
+
+    @GetMapping("/getEmp/{id}")
+    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> getEmployee(@PathVariable Long id) {
+        EmployeeDetailsResponseDto employee = service.getEmployee(id);
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee fetched successfully", employee));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ResponseMessage<String>> deleteEmployee(@PathVariable Long id) {
+        String deleteById = service.deleteById(id);
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee deleted successfully", deleteById));
+    }
+
+    @GetMapping("/payslip/{id}/download")
     public ResponseEntity<byte[]> download(@PathVariable Long id) throws Exception {
         byte[] pdf = service.downloadPayslip(id);
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDisposition(ContentDisposition
-            .attachment()
-            .filename("payslip_" + id + ".pdf")
-            .build());
-
-        return ResponseEntity.ok()
-                             .headers(headers)
-                             .body(pdf);
+        headers.setContentDisposition(ContentDisposition.attachment().filename("payslip_" + id + ".pdf").build());
+        return ResponseEntity.ok().headers(headers).body(pdf);
     }
 
     @GetMapping("/payslip/{employeeId}")
@@ -115,161 +91,132 @@ public class HrController {
         List<PayslipDto> payslips = service.listPayslipsForEmployee(employeeId);
         return ResponseEntity.ok(payslips);
     }
-    
-   
+
     @PostMapping("/payslip/generate")
     public ResponseEntity<PayslipDto> generate(@RequestBody GeneratePayslipRequest request) throws Exception {
         Payslip p = employeeService.generatePayslip(request.getEmployeeId(), request.getMonthYear());
         PayslipDto dto = PayslipDto.fromEntity(p);
         return ResponseEntity.ok(dto);
     }
-	 
+
     @PutMapping("/editEmp/{empId}/{days}")
-    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> addAttendence(@PathVariable Long empId, @PathVariable int days){
-    	
-    	EmployeeDetailsResponseDto updatedEmp = service.addAttendence(empId, days);
-    	
-    	return ResponseEntity.ok(new ResponseMessage<EmployeeDetailsResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "employee details updated", updatedEmp));
+    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> addAttendence(@PathVariable Long empId, @PathVariable int days) {
+        EmployeeDetailsResponseDto updatedEmp = service.addAttendence(empId, days);
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee details updated", updatedEmp));
     }
-    
-    // updating employee
+
     @PutMapping("/update/{id}")
-    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> updateEmployee(
-            @PathVariable Long id,
-            @RequestBody UpdateEmployeeRequestDto updateReq) {
-
+    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> updateEmployee(@PathVariable Long id, @RequestBody UpdateEmployeeRequestDto updateReq) {
         EmployeeDetailsResponseDto updatedEmp = service.updateEmployee(id, updateReq);
-        return ResponseEntity.ok(new ResponseMessage<>(
-                HttpStatus.OK.value(),
-                HttpStatus.OK.name(),
-                "Employee details updated successfully",
-                updatedEmp));
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee details updated successfully", updatedEmp));
     }
+
     @PutMapping("/updatePassword/{id}")
-    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> updatePassword(
-            @PathVariable Long id,
-            @RequestBody UpdatePasswordRequestDto updatePasswordRequestDto) {
-
+    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> updatePassword(@PathVariable Long id, @RequestBody UpdatePasswordRequestDto updatePasswordRequestDto) {
         EmployeeDetailsResponseDto updatedEmp = service.updatePassword(id, updatePasswordRequestDto);
-
-        return ResponseEntity.ok(
-                new ResponseMessage<>(
-                        HttpStatus.OK.value(),
-                        HttpStatus.OK.name(),
-                        "Password updated successfully",
-                        updatedEmp
-                )
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Password updated successfully", updatedEmp));
     }
-    
+
     @PostMapping("/addJob")
     public ResponseEntity<ResponseMessage<JobDetailsDto>> addJob(@RequestBody AddJobRequestDto jobRequest) {
         JobDetailsDto jobRes = service.addJob(jobRequest);
-        return ResponseEntity.ok(
-                new ResponseMessage<>(
-                        HttpStatus.OK.value(),
-                        HttpStatus.OK.name(),
-                        "Job added successfully",
-                        jobRes
-                )
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Job added successfully", jobRes));
     }
-    
+
     @GetMapping("/allJobs")
     public ResponseEntity<ResponseMessage<List<JobDetailsDto>>> getJobList() {
         List<JobDetailsDto> allJobs = service.getAllJobs();
-        return ResponseEntity.ok(new ResponseMessage<List<JobDetailsDto>>(HttpStatus.OK.value(), HttpStatus.OK.name(), "all jobs fetched successfully", allJobs));
-       
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "All jobs fetched successfully", allJobs));
     }
-        
 
     @PostMapping("/dailyReport/generate")
     public ResponseEntity<ResponseMessage<String>> generateDailyReport() {
         LocalDate d = LocalDate.now();
         String fileUrlOrMsg = service.generateDailyReport(d);
-
         if (fileUrlOrMsg == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ResponseMessage<>(500, "ERROR", "Failed to generate report", null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseMessage<>(500, "ERROR", "Failed to generate report", null));
         }
-
         if (fileUrlOrMsg.startsWith("/reports/")) {
-            return ResponseEntity.ok(
-                new ResponseMessage<>(200, "OK", "Report generated", fileUrlOrMsg)
-            );
+            return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Report generated", fileUrlOrMsg));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ResponseMessage<>(404, "NOT_FOUND", fileUrlOrMsg, null));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseMessage<>(404, "NOT_FOUND", fileUrlOrMsg, null));
         }
     }
 
-    
     @GetMapping("/dailyReport/url")
     public ResponseEntity<ResponseMessage<String>> getDailyReportUrl() {
         LocalDate dt = LocalDate.now();
-
         String fullUrl = service.getDailyReportUrl(dt);
         if (fullUrl == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ResponseMessage<>(404, "NOT_FOUND", "No report for date: " + dt, null));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseMessage<>(404, "NOT_FOUND", "No report for date: " + dt, null));
         }
         return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Report URL fetched", fullUrl));
-    } 
-    
+    }
+
+    // ============================ NEW / UPDATED ENDPOINTS ============================
+
+    // Update applicant status
     @PutMapping("/job/updateStatus/{applicationId}/{status}")
-    public ResponseEntity<?> updateJobStatus(
-            @PathVariable Long applicationId,
-            @PathVariable Boolean status) {
-
-    	service.updateJobApplicationStatus(applicationId, status);
-
+    public ResponseEntity<ResponseMessage<String>> updateJobStatus(@PathVariable Long applicationId, @PathVariable Boolean status) {
+        service.updateJobApplicationStatus(applicationId, status);
         String msg = status ? "Applicant Shortlisted" : "Applicant Rejected";
-
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "OK", msg, null)
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", msg, null));
     }
+
+//    // Send email to all shortlisted applicants
+//    @PostMapping("/job/sendShortlistedEmails")
+//    public ResponseEntity<ResponseMessage<String>> sendShortlistedEmails(@RequestBody EmailRequestDto emailRequest) {
+//        service.sendEmailsToShortlisted(emailRequest.getSubject(), emailRequest.getMessage());
+//        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Emails sent to all shortlisted applicants", null));
+//    }
+//
+//    // Send email to all rejected applicants
+//    @PostMapping("/job/sendRejectedEmails")
+//    public ResponseEntity<ResponseMessage<String>> sendRejectedEmails(@RequestBody EmailRequestDto emailRequest) {
+//        service.sendEmailsToRejected(emailRequest.getSubject(), emailRequest.getMessage());
+//        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Emails sent to all rejected applicants", null));
+//    }
+ // Send email to all shortlisted applicants
     @PostMapping("/job/sendShortlistedEmails")
-    public ResponseEntity<?> sendShortlistedEmails(@RequestBody EmailRequestDto emailRequest) {
-
-    	service.sendEmailsToShortlisted(emailRequest.getSubject(), emailRequest.getMessage());
-
+    public ResponseEntity<ResponseMessage<List<JobApplication>>> sendShortlistedEmails(@RequestBody EmailRequestDto emailRequest) {
+        List<JobApplication> updatedApplicants = service.sendEmailsToShortlisted(emailRequest.getSubject(), emailRequest.getMessage());
         return ResponseEntity.ok(
-                new ResponseMessage<>(200, "OK", "Emails sent to all shortlisted applicants", null)
+            new ResponseMessage<>(200, "OK", "Emails sent to all shortlisted applicants and status updated", updatedApplicants)
         );
     }
+
+    // Send email to all rejected applicants
     @PostMapping("/job/sendRejectedEmails")
-    
-    public ResponseEntity<?> sendRejectedEmails(@RequestBody EmailRequestDto emailRequest) {
-
-    	service.sendEmailsToRejected(emailRequest.getSubject(), emailRequest.getMessage());
-
+    public ResponseEntity<ResponseMessage<List<JobApplication>>> sendRejectedEmails(@RequestBody EmailRequestDto emailRequest) {
+        List<JobApplication> updatedApplicants = service.sendEmailsToRejected(emailRequest.getSubject(), emailRequest.getMessage());
         return ResponseEntity.ok(
-                new ResponseMessage<>(200, "OK", "Emails sent to all rejected applicants", null)
+            new ResponseMessage<>(200, "OK", "Emails sent to all rejected applicants and status updated", updatedApplicants)
         );
     }
 
+
+    // Send individual invited email and update status
+    @PostMapping("/job/sendInvitedEmail/{applicantId}")
+    public ResponseEntity<ResponseMessage<String>> sendInvitedEmail(@PathVariable Long applicantId, @RequestBody EmailRequestDto emailRequest) {
+        service.sendInvitedEmailAndUpdateStatus(applicantId, emailRequest.getSubject(), emailRequest.getMessage());
+        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Invited email sent and status updated to INVITED", null));
+    }
+
+    // Send individual rejected email and update status
+    @PostMapping("/job/sendRejectedEmail/{applicantId}")
+    public ResponseEntity<ResponseMessage<String>> sendRejectedEmail(@PathVariable Long applicantId, @RequestBody EmailRequestDto emailRequest) {
+        service.sendRejectedEmailAndUpdateStatus(applicantId, emailRequest.getSubject(), emailRequest.getMessage());
+        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Rejected email sent and status updated to TERMINATED", null));
+    }
 
     @DeleteMapping("/job/delete/{jobId}")
-    public ResponseEntity<?> deleteJob(@PathVariable Long jobId) {
-
+    public ResponseEntity<ResponseMessage<String>> deleteJob(@PathVariable Long jobId) {
         String result = service.deleteJob(jobId);
-
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "OK", "Job deleted successfully", result)
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Job deleted successfully", result));
     }
-   
+
     @PostMapping("/logout")
     public ResponseEntity<ResponseMessage<String>> logout() {
-
-        return ResponseEntity.ok(
-                new ResponseMessage<>(
-                        HttpStatus.OK.value(),
-                        HttpStatus.OK.name(),
-                        "Logout successful",
-                        "Admin logged out successfully"
-                )
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Logout successful", "Admin logged out successfully"));
     }
 }

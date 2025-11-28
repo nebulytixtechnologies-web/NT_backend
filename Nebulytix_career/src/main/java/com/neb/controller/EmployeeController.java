@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -127,4 +128,31 @@ public class EmployeeController {
         return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(),
                 "Profile picture uploaded successfully", imageUrl));
     }
+    @DeleteMapping("/{id}/profile-picture")
+    public ResponseEntity<ResponseMessage<String>> deleteProfilePicture(@PathVariable Long id) {
+
+        boolean deleted = employeeService.deleteProfilePicture(id);
+
+        if (deleted) {
+            return ResponseEntity.ok(
+                    new ResponseMessage<>(
+                            HttpStatus.OK.value(),
+                            HttpStatus.OK.name(),
+                            "Profile picture deleted successfully",
+                            "Profile image removed from database and folder"
+                    )
+            );
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseMessage<>(
+                            HttpStatus.NOT_FOUND.value(),
+                            HttpStatus.NOT_FOUND.name(),
+                            "Profile picture not found",
+                            null
+                    ));
+        }
+    }
+
+    
+  
 }
