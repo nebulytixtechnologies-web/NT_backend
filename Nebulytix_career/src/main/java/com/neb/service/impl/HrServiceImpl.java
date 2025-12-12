@@ -226,19 +226,6 @@ public class HrServiceImpl implements HrService {
         jobApplicationRepository.save(app);
     }
 
-//    @Override
-//    public void sendEmailsToShortlisted(String subject, String message) {
-//        List<JobApplication> shortlisted = jobApplicationRepository.findByStatus("SHORTLISTED");
-//        if (shortlisted.isEmpty()) throw new RuntimeException("No shortlisted applicants found");
-//        shortlisted.forEach(app -> emailService.sendApplicationMail(app.getEmail(), subject, message));
-//    }
-//
-//    @Override
-//    public void sendEmailsToRejected(String subject, String message) {
-//        List<JobApplication> rejected = jobApplicationRepository.findByStatus("REJECTED");
-//        if (rejected.isEmpty()) throw new RuntimeException("No rejected applicants found");
-//        rejected.forEach(app -> emailService.sendApplicationMail(app.getEmail(), subject, message));
-//    }
     @Override
     public List<JobApplication> sendEmailsToShortlisted(String subject, String message) {
         List<JobApplication> shortlisted = jobApplicationRepository.findByStatus("SHORTLISTED");

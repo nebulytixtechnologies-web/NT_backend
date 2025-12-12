@@ -19,4 +19,5 @@ public class JobDetailsDto {
     private Boolean isActive;
     private LocalDate postedDate;
     private LocalDate closingDate;
+    private String location;
 }

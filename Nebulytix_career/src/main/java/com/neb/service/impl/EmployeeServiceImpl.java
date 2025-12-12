@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
@@ -103,25 +104,41 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         // Salary Calculations
         double salary = emp.getSalary();
-        p.setBasic(salary * 0.53);
-        p.setHra(salary * 0.20);
-        p.setFlexi(salary * 0.27);
-        double gross = p.getBasic() + p.getHra() + p.getFlexi();//
+        p.setBasic(salary);
+        p.setHra(0.0);
+        p.setFlexi(0.0);
+        double gross = p.getBasic();
         p.setGrossSalary(gross);
         
         // Deductions
-        p.setPfDeduction(p.getBasic() * 0.12);
-        p.setProfTaxDeduction(200.0);
-        double ded = p.getPfDeduction() + p.getProfTaxDeduction();
+        p.setPfDeduction(0.0);
+        p.setProfTaxDeduction(0.0);
+        double ded = 0.0;
         p.setTotalDeductions(ded);
         
+        System.out.println(monthYear);
+         String[] parts = monthYear.split(" ");
+        String monthName = parts[0];
+        int year = Integer.parseInt(parts[1]);
+
+        int month = java.time.Month.valueOf(monthName.toUpperCase()).getValue();
+        YearMonth y = YearMonth.of(year, month);
+        int days= y.lengthOfMonth();
+        
+        double oneDaySalary = salary/days;
+        double totalSalary = oneDaySalary*emp.getDaysPresent();
+         
+        totalSalary = Math.round(totalSalary * 100.0) / 100.0;
+        
+        
+        
         // Net Salary Calculation
-        double net = gross - ded;
-        p.setNetSalary(net);
-        p.setBalance(gross);
-        p.setAggrgDeduction(ded);
-        p.setIncHdSalary(net);
-        p.setTaxCredit(net*0.05);//random values added
+        double net = totalSalary;
+        p.setNetSalary(totalSalary);
+        p.setBalance(totalSalary);
+        p.setAggrgDeduction(0.0);
+        p.setIncHdSalary(0.0);
+        p.setTaxCredit(0.0);//random values added
      
         // Save payslip record
         p = payslipRepo.save(p);
@@ -324,7 +341,5 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	    return true;
 	}
-
-
 }
 	       

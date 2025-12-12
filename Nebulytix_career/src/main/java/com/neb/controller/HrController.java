@@ -163,19 +163,6 @@ public class HrController {
         return ResponseEntity.ok(new ResponseMessage<>(200, "OK", msg, null));
     }
 
-//    // Send email to all shortlisted applicants
-//    @PostMapping("/job/sendShortlistedEmails")
-//    public ResponseEntity<ResponseMessage<String>> sendShortlistedEmails(@RequestBody EmailRequestDto emailRequest) {
-//        service.sendEmailsToShortlisted(emailRequest.getSubject(), emailRequest.getMessage());
-//        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Emails sent to all shortlisted applicants", null));
-//    }
-//
-//    // Send email to all rejected applicants
-//    @PostMapping("/job/sendRejectedEmails")
-//    public ResponseEntity<ResponseMessage<String>> sendRejectedEmails(@RequestBody EmailRequestDto emailRequest) {
-//        service.sendEmailsToRejected(emailRequest.getSubject(), emailRequest.getMessage());
-//        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Emails sent to all rejected applicants", null));
-//    }
  // Send email to all shortlisted applicants
     @PostMapping("/job/sendShortlistedEmails")
     public ResponseEntity<ResponseMessage<List<JobApplication>>> sendShortlistedEmails(@RequestBody EmailRequestDto emailRequest) {

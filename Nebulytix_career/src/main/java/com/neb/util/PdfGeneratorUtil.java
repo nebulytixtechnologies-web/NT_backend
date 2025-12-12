@@ -1,42 +1,3 @@
-/**
- * ---------------------------------------------------------------------
- * File Name   : PdfGeneratorUtil.java
- * Package     : com.neb.util
- * ---------------------------------------------------------------------
- * Purpose :
- *   This utility class is used to generate employee payslips in PDF format.
- *   It takes employee and payslip details and creates a professional PDF file.
- *
- * Description :
- *   - Uses the iText library to build the PDF layout.
- *   - Adds company logo, employee details, salary breakdown, and tax info.
- *   - Returns the generated PDF as a byte array for download or email.
- *
- * Main Method :
- *   createPayslipPdf(Employee emp, Payslip p)
- *      → Creates and formats the payslip PDF using the employee and payslip data.
- *      → Adds sections like:
- *          1. Company name and logo
- *          2. Employee information (bank, PAN, UAN, etc.)
- *          3. Salary details (earnings, deductions, net pay)
- *          4. Tax and perk information
- *          5. Footer note
- *
- * Helper Method :
- *   createCellOuterColumnBorders(...)
- *      → Helps design table cells with borders on specific sides
- *        (top, left, right, bottom).
- *
- * Output :
- *   - The method returns the PDF content as a byte array.
- *   - This can be saved, downloaded, or sent as an email attachment.
- *
- * Example :
- *   byte[] pdf = PdfGeneratorUtil.createPayslipPdf(employee, payslip);
- *   // Use the byte array to send response or save file
- * ---------------------------------------------------------------------
- */
-
 package com.neb.util;
 
 import java.io.ByteArrayOutputStream;
@@ -53,16 +14,16 @@ public class PdfGeneratorUtil {
         // PDF output stream setup
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document document = new Document();
-        PdfWriter.getInstance(document, baos);
+        PdfWriter writer = PdfWriter.getInstance(document, baos);
         document.open();
 
         // ---------------------------------------------------------
         // Add company logo (with file check)
         // ---------------------------------------------------------
+        String logoPath = "E:/NEBULYTIX TECHNOLOGIES/files/nebTechLogo.jpg";
+        String stampPath = "E:/NEBULYTIX TECHNOLOGIES/files/nebulytixStamp.jpg";
+
         try {
-        	//  C:/path/to/NebulytixLogo.jpg
-           // String logoPath = "E:/NEBULYTIX TECHNOLOGIES/files/nebTechLogo.jpg"; // ✅ update this to your logo file path
-            String logoPath ="E:/NEBULYTIX TECHNOLOGIES/files/nebTechLogo.jpg";//C:\\Users\\USER\\git\\AdminHr-EmpDashboards\\AdminHrEmpDashBoards\\src\\main\\webapp\\images\\NebulytixLogo.jpg"
             File file = new File(logoPath);
             if (file.exists()) {
                 Image logo = Image.getInstance(logoPath);
@@ -70,13 +31,12 @@ public class PdfGeneratorUtil {
                 logo.setAlignment(Element.ALIGN_RIGHT);
                 document.add(logo);
             } else {
-                document.add(new Paragraph("NEBULYTIX TECHNOLOGIES PVT LTD", 
-                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
-                System.out.println("Else Part");
+                document.add(new Paragraph("NEBULYTIX TECHNOLOGIES PVT LTD",
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
             }
         } catch (Exception e) {
-            document.add(new Paragraph("NEBULYTIX TECHNOLOGIES PVT LTD", 
-                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
+            document.add(new Paragraph("NEBULYTIX TECHNOLOGIES PVT LTD",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
         }
 
         // Fonts
@@ -85,7 +45,7 @@ public class PdfGeneratorUtil {
 
         // Header details
         document.add(new Paragraph("Payslip for the month: " + p.getPayslipMonth(), boldFont));
-        document.add(new Paragraph("Employee: " + emp.getFirstName() + " " + emp.getLastName() 
+        document.add(new Paragraph("Employee: " + emp.getFirstName() + " " + emp.getLastName()
                 + "   |   Card No: " + emp.getCardNumber(), normalFont));
         document.add(new Paragraph("\n"));
 
@@ -94,27 +54,24 @@ public class PdfGeneratorUtil {
         table1.setWidthPercentage(100f);
 
         table1.addCell(createCellOuterColumnBorders("Location: " + p.getLocation(), normalFont, true, true, true, false));
-        table1.addCell(createCellOuterColumnBorders("P.F.No: " + emp.getPfNumber(), normalFont, true, false, true, false));
-
-        table1.addCell(createCellOuterColumnBorders("Bank A/C No: " + emp.getBankAccountNumber() 
-                + "   Bank: " + emp.getBankName(), normalFont, false, true, true, false));
-        table1.addCell(createCellOuterColumnBorders("E.P.S No: " + emp.getEpsNumber(), normalFont, false, false, true, false));
-
+        table1.addCell(createCellOuterColumnBorders("P.F.No: " + "-", normalFont, true, false, true, false));
+        table1.addCell(createCellOuterColumnBorders(
+        	    "Bank A/C No: " + emp.getBankAccountNumber() +
+        	    "\nBank: " + emp.getBankName(),
+        	    normalFont, false, true, true, false));
+        table1.addCell(createCellOuterColumnBorders("E.P.S No: " +  "-", normalFont, false, false, true, false));
         table1.addCell(createCellOuterColumnBorders("No. of days paid: " + emp.getDaysPresent(), normalFont, false, true, true, false));
         table1.addCell(createCellOuterColumnBorders("PAN: " + emp.getPanNumber(), normalFont, false, false, true, false));
-
         table1.addCell(createCellOuterColumnBorders("", normalFont, false, true, true, false));
-        table1.addCell(createCellOuterColumnBorders("UAN: " + emp.getUanNumber(), normalFont, false, false, true, false));
-
+        table1.addCell(createCellOuterColumnBorders("UAN: " + "-", normalFont, false, false, true, false));
         table1.addCell(createCellOuterColumnBorders("", normalFont, false, true, true, false));
-        table1.addCell(createCellOuterColumnBorders("ESI No.: " + emp.getEsiNumber(), normalFont, false, false, true, false));
-
+        table1.addCell(createCellOuterColumnBorders("ESI No.: " +"-", normalFont, false, false, true, false));
         table1.addCell(createCellOuterColumnBorders("", normalFont, false, true, true, true));
         table1.addCell(createCellOuterColumnBorders("DOJ: " + emp.getJoiningDate(), normalFont, false, false, true, true));
 
         document.add(table1);
         document.add(new Paragraph("\n"));
-
+        
         // ========================= Table 2 – Earnings / Deductions =========================
         PdfPTable table2 = new PdfPTable(3);
         table2.setWidthPercentage(100f);
@@ -182,13 +139,37 @@ public class PdfGeneratorUtil {
         // Footer note
         document.add(new Paragraph("This is a computer-generated document and does not require a signature.", normalFont));
 
+        // ========================= UPDATED STAMP POSITION =========================
+        try {
+            Image stamp = Image.getInstance(stampPath);
+            stamp.scaleToFit(100f, 100f);  // adjust size as needed
+
+            Rectangle pageSize = document.getPageSize();
+
+            // X: Right aligned
+            float x = pageSize.getRight() - stamp.getScaledWidth() - document.rightMargin();
+
+            // Y: Add extra spacing from bottom
+            float customBottomSpacing = 100f;  // <<<<<< CHANGE THIS TO MOVE STAMP UP/DOWN
+            float y = pageSize.getBottom() + document.bottomMargin() + customBottomSpacing;
+
+            stamp.setAbsolutePosition(x, y);
+
+            PdfContentByte canvas = writer.getDirectContent();
+            canvas.addImage(stamp);
+
+        } catch (Exception e) {
+            System.err.println("Unable to add stamp image: " + e.getMessage());
+        }
+
         document.close();
         return baos.toByteArray();
     }
 
     // Helper: create table cell with custom borders
     private static PdfPCell createCellOuterColumnBorders(String text, Font font,
-            boolean borderTop, boolean borderLeft, boolean borderRight, boolean borderBottom) {
+                                                         boolean borderTop, boolean borderLeft,
+                                                         boolean borderRight, boolean borderBottom) {
 
         PdfPCell cell = new PdfPCell(new Paragraph(text, font));
         int border = 0;
@@ -200,7 +181,4 @@ public class PdfGeneratorUtil {
         cell.setBorderWidth(1f);
         return cell;
     }
-    
-    
-    
 }

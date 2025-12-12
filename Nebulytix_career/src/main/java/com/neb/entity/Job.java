@@ -41,6 +41,8 @@ public class Job {
     private LocalDate postedDate;
     private LocalDate closingDate;
     
+    private String location;
+    
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore //
     private List<JobApplication> applications;

@@ -32,7 +32,7 @@ public interface EmployeeService {
     public String submitDailyReport(AddDailyReportRequestDto request);
     
     public String uploadProfilePicture(Long employeeId, MultipartFile file);
+    
     boolean deleteProfilePicture(Long employeeId);
-
 
 }

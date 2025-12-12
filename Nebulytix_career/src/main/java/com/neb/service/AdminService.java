@@ -34,12 +34,10 @@ public interface AdminService {
 
     
     public String deleteHr(Long id);
-    
-   // public UpdateEmployeeResponseDto updateHrDetails(Long empId,UpdateEmployeeRequestDto updateReq);
-    
+  
     public byte[] generateDailyReport(LocalDate date)throws Exception;
     public Page<EmployeeDetailsResponseDto> getHrList(int page, int size, String sort);
-    EmployeeDetailsResponseDto updateHrDetails(Long id, UpdateEmployeeRequestDto dto);
+    public EmployeeDetailsResponseDto updateHrDetails(Long id, UpdateEmployeeRequestDto dto);
 
 
 	public AddEmployeeResponseDto addAdmin(AddEmployeeRequestDto addEmpReq);

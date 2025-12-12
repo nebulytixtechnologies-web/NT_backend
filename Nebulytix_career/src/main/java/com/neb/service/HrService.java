@@ -18,6 +18,7 @@ public interface HrService {
 
     // Employee management
     AddEmployeeResponseDto addEmployee(AddEmployeeRequestDto addEmpReq);
+    
     EmployeeDetailsResponseDto login(LoginRequestDto loginReq);
     List<EmployeeDetailsResponseDto> getEmployeeList();
     EmployeeDetailsResponseDto getEmployee(Long id);
@@ -44,9 +45,6 @@ public interface HrService {
     void sendInvitedEmailAndUpdateStatus(Long applicantId, String subject, String message);
     void sendRejectedEmailAndUpdateStatus(Long applicantId, String subject, String message);
 
-//    // Send email to all applicants by status
-//    void sendEmailsToShortlisted(String subject, String message);
-//    void sendEmailsToRejected(String subject, String message);
     List<JobApplication> sendEmailsToShortlisted(String subject, String message);
     List<JobApplication> sendEmailsToRejected(String subject, String message);
 

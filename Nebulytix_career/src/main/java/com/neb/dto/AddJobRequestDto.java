@@ -17,4 +17,5 @@ public class AddJobRequestDto {
     private String salaryRange;
     private LocalDate postedDate;
     private LocalDate closingDate;
+    private String location;
 }
