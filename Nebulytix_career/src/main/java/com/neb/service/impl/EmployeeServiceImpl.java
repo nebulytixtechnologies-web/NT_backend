@@ -1,13 +1,15 @@
 package com.neb.service.impl;
 import java.io.File;
 import java.io.IOException;
-
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.neb.constants.WorkStatus;
 import com.neb.dto.AddDailyReportRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
-import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.LoginRequestDto;
 import com.neb.dto.WorkResponseDto;
 import com.neb.entity.DailyReport;
@@ -89,67 +90,68 @@ public class EmployeeServiceImpl implements EmployeeService {
         return empRepo.findById(id).orElseThrow(() -> new CustomeException("Employee not found with id: "+id));
     }
    
-	@Override
-	public Payslip generatePayslip(Long employeeId, String monthYear) throws Exception{
-		
-		
-		Employee emp = empRepo.findById(employeeId)
-	            .orElseThrow(() -> new CustomeException("Employee not found with id: "+employeeId));
-		
-		Payslip p = new Payslip();
+     @Override
+    public Payslip generatePayslip(Long employeeId, String monthYear) throws Exception {
+
+        Employee emp = empRepo.findById(employeeId)
+                .orElseThrow(() -> new CustomeException("Employee not found with id: " + employeeId));
+
+        Payslip p = new Payslip();
         p.setEmployee(emp);
         p.setPayslipMonth(monthYear);
         p.setGeneratedDate(LocalDateTime.now());
         p.setLocation("FLAT NO 501B,PSR PRIME TOWERS,BESIDE DLF,GACHIBOWLI,500032");
 
-        // Salary Calculations
+        // Salary
         double salary = emp.getSalary();
+        System.out.println("salary:"+salary);
         p.setBasic(salary);
         p.setHra(0.0);
         p.setFlexi(0.0);
-        double gross = p.getBasic();
-        p.setGrossSalary(gross);
-        
+        p.setGrossSalary(salary);
+      
         // Deductions
         p.setPfDeduction(0.0);
         p.setProfTaxDeduction(0.0);
-        double ded = 0.0;
-        p.setTotalDeductions(ded);
-        
-        System.out.println(monthYear);
-         String[] parts = monthYear.split(" ");
+        p.setTotalDeductions(0.0);
+
+        // Month calculation
+        String[] parts = monthYear.split(" ");
         String monthName = parts[0];
         int year = Integer.parseInt(parts[1]);
 
         int month = java.time.Month.valueOf(monthName.toUpperCase()).getValue();
         YearMonth y = YearMonth.of(year, month);
-        int days= y.lengthOfMonth();
-        
-        double oneDaySalary = salary/days;
-        double totalSalary = oneDaySalary*emp.getDaysPresent();
-         
-        totalSalary = Math.round(totalSalary * 100.0) / 100.0;
-        
-        
-        
-        // Net Salary Calculation
-        double net = totalSalary;
-        p.setNetSalary(totalSalary);
-        p.setBalance(totalSalary);
+        int daysInMonth = y.lengthOfMonth();
+
+        // ================= FIXED SALARY CALCULATION =================
+        BigDecimal bdSalary = BigDecimal.valueOf(emp.getSalary());
+        BigDecimal bdDaysInMonth = BigDecimal.valueOf(daysInMonth);
+        BigDecimal bdDaysPresent = BigDecimal.valueOf(emp.getDaysPresent());
+
+        BigDecimal oneDaySalary = bdSalary.divide(bdDaysInMonth, 2, RoundingMode.HALF_UP);
+
+        BigDecimal totalSalary = oneDaySalary.multiply(bdDaysPresent)
+                .setScale(0, RoundingMode.HALF_UP); // ROUND FIGURE
+
+        double finalSalary = totalSalary.doubleValue();
+        // ===========================================================
+
+        p.setNetSalary(finalSalary);
+        p.setBalance(finalSalary);
         p.setAggrgDeduction(0.0);
         p.setIncHdSalary(0.0);
-        p.setTaxCredit(0.0);//random values added
-     
-        // Save payslip record
+        p.setTaxCredit(0.0);
+
+        // Save payslip
         p = payslipRepo.save(p);
-        
-        // PDF File Generation
+
+        // PDF generation
         String fileName = emp.getCardNumber() + "_payslip" + monthYear.replace(" ", "_") + ".pdf";
         String folderPath = baseFolder + "/" + monthYear.replace(" ", "_");
         Files.createDirectories(Paths.get(folderPath));
         String fullPath = folderPath + "/" + fileName;
 
-        
         byte[] pdfBytes = PdfGeneratorUtil.createPayslipPdf(emp, p);
         Files.write(Paths.get(fullPath), pdfBytes);
 
@@ -158,7 +160,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         payslipRepo.save(p);
 
         return p;
-	}
+    }
+
+
 	 // Get employee details by EMAIL
     public EmployeeDetailsResponseDto getEmployeeByEmail(String email) {
     	System.out.println(email);

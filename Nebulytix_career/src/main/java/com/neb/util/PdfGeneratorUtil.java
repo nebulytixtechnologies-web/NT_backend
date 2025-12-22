@@ -20,8 +20,8 @@ public class PdfGeneratorUtil {
         // ---------------------------------------------------------
         // Add company logo (with file check)
         // ---------------------------------------------------------
-        String logoPath = "E:/NEBULYTIX TECHNOLOGIES/files/nebTechLogo.jpg";
-        String stampPath = "E:/NEBULYTIX TECHNOLOGIES/files/nebulytixStamp.jpg";
+        String logoPath = "D:/NEBULYTIX TECHNOLOGIES/files/nebTechLogo.jpeg";
+        String stampPath = "D:/NEBULYTIX TECHNOLOGIES/files/nebulytixStamp.jpeg";
 
         try {
             File file = new File(logoPath);

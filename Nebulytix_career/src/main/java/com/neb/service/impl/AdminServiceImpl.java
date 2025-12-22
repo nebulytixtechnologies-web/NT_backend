@@ -116,6 +116,23 @@ public class AdminServiceImpl implements AdminService{
 	    return empListRes;
 	}
 	
+	
+	public List<EmployeeDetailsResponseDto> getHrList() {
+		
+		 List<Employee> hrList=	empRepo.findByLoginRoleNotIn(List.of("admin","employee"));	    
+		    if(hrList==null) {
+		    	throw new CustomeException("Employees not found");
+		    }
+		    
+		    List<EmployeeDetailsResponseDto> hrListRes = hrList.stream().map(emp->{
+		    	
+		    	EmployeeDetailsResponseDto hrResDto = mapper.map(emp, EmployeeDetailsResponseDto.class);
+		    	return hrResDto;
+		    }).collect(Collectors.toList());
+		    
+		    return hrListRes;
+	}
+	
            //............. adding work ..............
     public String assignWork(AddWorkRequestDto request,MultipartFile file) {
         Employee emp = empRepo.findById(request.getEmployeeId())
@@ -389,6 +406,9 @@ public class AdminServiceImpl implements AdminService{
 			throw new CustomeException("Admin not found with id :"+id);
 		}
 	}
+
+
+	
 	
 	
 	}

@@ -98,6 +98,12 @@ public class HrController {
         PayslipDto dto = PayslipDto.fromEntity(p);
         return ResponseEntity.ok(dto);
     }
+    
+    @DeleteMapping("delete/payslip/{id}")
+    public ResponseEntity<ResponseMessage<String>> deletePayslip(@PathVariable Long id) {
+        service.deletePayslip(id);
+        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "PaySlip Deleted Successfully", null));
+    }
 
     @PutMapping("/editEmp/{empId}/{days}")
     public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> addAttendence(@PathVariable Long empId, @PathVariable int days) {
@@ -202,6 +208,7 @@ public class HrController {
         return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Job deleted successfully", result));
     }
 
+    
     @PostMapping("/logout")
     public ResponseEntity<ResponseMessage<String>> logout() {
         return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Logout successful", "Admin logged out successfully"));

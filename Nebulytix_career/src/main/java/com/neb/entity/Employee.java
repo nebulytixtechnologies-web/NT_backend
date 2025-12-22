@@ -78,6 +78,6 @@ public class Employee {
     private List<Work> works = new ArrayList<>();
 
     // One employee can have multiple payslips
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "employee", orphanRemoval = true)
     private List<Payslip> payslips = new ArrayList<>();
 }

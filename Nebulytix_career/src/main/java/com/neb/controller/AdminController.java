@@ -90,6 +90,16 @@ public class AdminController {
 		
 		return ResponseEntity.ok(new ResponseMessage<List<EmployeeDetailsResponseDto>>(HttpStatus.OK.value(), HttpStatus.OK.name(), "All Employee fetched successfully", employeeList));
 	}
+	
+	@GetMapping("/getHrList")
+	public ResponseEntity<ResponseMessage<List<EmployeeDetailsResponseDto>>> getHrList(){
+		
+		List<EmployeeDetailsResponseDto> hrList = adminService.getHrList();
+		
+		return ResponseEntity.ok(new ResponseMessage<List<EmployeeDetailsResponseDto>>(HttpStatus.OK.value(), HttpStatus.OK.name(), "All Employee fetched successfully", hrList));
+	}
+	
+	
 	 @PostMapping(value = "/work/add", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	 
 	    public ResponseEntity<ResponseMessage<String>> addWork(

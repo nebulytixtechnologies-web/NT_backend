@@ -13,19 +13,19 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry
             .addResourceHandler("/uploads/tasks/**")
-            .addResourceLocations("file:E:/NEBULYTIX TECHNOLOGIES/task attachments/");
+            .addResourceLocations("file:D:/NEBULYTIX TECHNOLOGIES/task attachments/");
 
         registry
             .addResourceHandler("/uploads/resumes/**")
-            .addResourceLocations("file:E:/NEBULYTIX TECHNOLOGIES/application resumes/");
+            .addResourceLocations("file:D:/NEBULYTIX TECHNOLOGIES/application resumes/");
         
         registry
         .addResourceHandler("/reports/daily/**")
-        .addResourceLocations("file:E:/NEBULYTIX TECHNOLOGIES/dailyReports/");
+        .addResourceLocations("file:D:/NEBULYTIX TECHNOLOGIES/dailyReports/");
         
         registry
         .addResourceHandler("/uploads/profiles/**")
-        .addResourceLocations("file:E:/NEBULYTIX TECHNOLOGIES/profile-pictures/");
+        .addResourceLocations("file:D:/NEBULYTIX TECHNOLOGIES/profile-pictures/");
     }
 
     @Override

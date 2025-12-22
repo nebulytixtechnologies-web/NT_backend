@@ -50,4 +50,6 @@ public interface HrService {
 
     // Single applicant email
     void sendEmailToSingleApplicant(Long applicantId, String subject, String message);
+    
+   public void deletePayslip(Long id);
 }

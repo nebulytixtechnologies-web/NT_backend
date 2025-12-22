@@ -1,5 +1,6 @@
 package com.neb.service.impl;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,7 +87,7 @@ public class HrServiceImpl implements HrService {
 
     @Override
     public List<EmployeeDetailsResponseDto> getEmployeeList() {
-        List<Employee> employees = empRepo.findByLoginRoleNotIn(List.of("admin", "hr"));
+        List<Employee> employees = empRepo.findByLoginRoleNotIn(List.of("admin","hr"));
         if (employees.isEmpty()) throw new CustomeException("No employees found");
         return employees.stream().map(emp -> mapper.map(emp, EmployeeDetailsResponseDto.class)).collect(Collectors.toList());
     }
@@ -285,4 +286,29 @@ public class HrServiceImpl implements HrService {
         app.setStatus("TERMINATED");
         jobApplicationRepository.save(app);
     }
+    
+    @Override
+	public void deletePayslip(Long id) {
+
+		// 1. Find payslip
+        Payslip payslip = payslipRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Payslip not found with ID: " + id));
+
+        // 2. Delete file from filesystem
+        if (payslip.getPdfPath() != null) {
+
+            File file = new File(payslip.getPdfPath());
+
+            if (file.exists()) {
+                boolean deleted = file.delete();
+                if (!deleted) {
+                    throw new RuntimeException("Failed to delete file from disk: " + payslip.getPdfPath());
+                }
+            }
+        }
+
+        // 3. Delete DB record
+        payslipRepo.delete(payslip);
+		
+	}
 }
