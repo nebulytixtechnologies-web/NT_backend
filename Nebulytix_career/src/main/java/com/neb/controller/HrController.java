@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import com.neb.dto.AddEmployeeResponseDto;
 import com.neb.dto.AddJobRequestDto;
 import com.neb.dto.EmailRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
+import com.neb.dto.EmployeeReportDto;
 import com.neb.dto.GeneratePayslipRequest;
 import com.neb.dto.JobDetailsDto;
 import com.neb.dto.LoginRequestDto;
@@ -149,6 +151,51 @@ public class HrController {
         }
     }
 
+    @PostMapping("/dailyReport/generate/{date}")
+    public ResponseEntity<ResponseMessage<String>> generateDailyReportByDate(@PathVariable("date")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        String fileUrlOrMsg = service.generateDailyReport(date);
+
+        if (fileUrlOrMsg == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseMessage<>(500, "ERROR", "Failed to generate report", null));
+        }
+
+        if (fileUrlOrMsg.startsWith("/reports/")) {
+            return ResponseEntity.ok(
+                    new ResponseMessage<>(200, "OK", "Report generated", fileUrlOrMsg));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseMessage<>(404, "NOT_FOUND", fileUrlOrMsg, null));
+        }
+    }
+    
+    @GetMapping("/dailyReport/by-date/{date}")
+    public ResponseEntity<ResponseMessage<List<EmployeeReportDto>>> getDailyReportByDate(@PathVariable
+         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+     List<EmployeeReportDto> reports = service.getDailyReportByDate(date);
+
+     if (reports.isEmpty()) {
+         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                 .body(new ResponseMessage<>(
+                         404,
+                         "NOT_FOUND",
+                         "No daily reports found for date: " + date,
+                         reports
+                 ));
+     }
+
+     return ResponseEntity.ok(
+             new ResponseMessage<>(
+                     200,
+                     "OK",
+                     "Daily reports fetched successfully",
+                     reports
+             )
+     );
+ }
     @GetMapping("/dailyReport/url")
     public ResponseEntity<ResponseMessage<String>> getDailyReportUrl() {
         LocalDate dt = LocalDate.now();
