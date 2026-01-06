@@ -69,7 +69,7 @@ public class AdminController {
 	public ResponseEntity<ResponseMessage<AddEmployeeResponseDto>> addAdmin(@RequestBody AddEmployeeRequestDto addEmpReq){
 		
 		AddEmployeeResponseDto addEmpRes = adminService.addAdmin(addEmpReq);
-		
+         System.out.println("==>"+addEmpRes);		
 		return ResponseEntity.ok(new ResponseMessage<AddEmployeeResponseDto>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Admin added successfully", addEmpRes));
 	}
 	
