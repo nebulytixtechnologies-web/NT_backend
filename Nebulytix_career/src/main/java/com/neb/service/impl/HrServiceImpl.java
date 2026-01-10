@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import com.neb.dto.AddEmployeeRequestDto;
 import com.neb.dto.AddEmployeeResponseDto;
 import com.neb.dto.AddJobRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
+import com.neb.dto.EmployeeReportDto;
 import com.neb.dto.JobDetailsDto;
 import com.neb.dto.LoginRequestDto;
 import com.neb.dto.PayslipDto;
@@ -212,6 +214,30 @@ public class HrServiceImpl implements HrService {
         }
     }
 
+    @Override
+	public List<EmployeeReportDto> getDailyReportByDate(LocalDate date) {
+		List<DailyReport> dailyReports =dailyReportRepository.findByReportDate(date);
+//        System.out.println(dailyReports);
+        
+	    if (dailyReports.isEmpty()) {
+	        return Collections.emptyList();
+	    }
+
+	    return dailyReports.stream()
+	            .map(r -> {
+	                EmployeeReportDto dto = new EmployeeReportDto();
+	                dto.setEmployeeId(r.getEmployee().getId());
+	                dto.setEmployeeName(r.getEmployee().getFirstName());
+	                dto.setCardNo(r.getEmployee().getCardNumber());
+	                dto.setRole(r.getEmployee().getJobRole());
+	               
+	                dto.setSummary(r.getSummary()); // map summary here
+	                return dto;
+	            })
+	            .toList();
+
+	}
+    
     @Override
     public String getDailyReportUrl(LocalDate reportDate) {
         List<DailyReport> reports = dailyReportRepository.findByReportDate(reportDate);

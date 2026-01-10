@@ -7,6 +7,7 @@ import com.neb.dto.AddEmployeeRequestDto;
 import com.neb.dto.AddEmployeeResponseDto;
 import com.neb.dto.AddJobRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
+import com.neb.dto.EmployeeReportDto;
 import com.neb.dto.JobDetailsDto;
 import com.neb.dto.LoginRequestDto;
 import com.neb.dto.PayslipDto;
@@ -52,4 +53,6 @@ public interface HrService {
     void sendEmailToSingleApplicant(Long applicantId, String subject, String message);
     
    public void deletePayslip(Long id);
+
+   List<EmployeeReportDto> getDailyReportByDate(LocalDate date);
 }

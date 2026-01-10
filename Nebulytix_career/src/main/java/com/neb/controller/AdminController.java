@@ -95,7 +95,7 @@ public class AdminController {
 	public ResponseEntity<ResponseMessage<List<EmployeeDetailsResponseDto>>> getHrList(){
 		
 		List<EmployeeDetailsResponseDto> hrList = adminService.getHrList();
-		
+		System.out.println(hrList);
 		return ResponseEntity.ok(new ResponseMessage<List<EmployeeDetailsResponseDto>>(HttpStatus.OK.value(), HttpStatus.OK.name(), "All Employee fetched successfully", hrList));
 	}
 	
